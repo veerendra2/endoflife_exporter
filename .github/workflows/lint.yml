@@ -1,0 +1,25 @@
+name: Linters
+
+on:
+  pull_request:
+
+jobs:
+  golangci-lint:
+    name: Lint SourceCode
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          cache: true
+
+      - name: Run Linter
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: latest
+          working-directory: ./
+          args: --timeout 3m
