@@ -1,0 +1,16 @@
+---
+services:
+  endoflife_exporter:
+    image: ghcr.io/veerendra2/endoflife_exporter:latest
+    hostname: endoflife_exporter
+    container_name: endoflife_exporter
+    restart: unless-stopped
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+    environment:
+      ADDRESS: ":8080"
+      CONFIG_FILE: "/config.yml"
+    volumes:
+      - ./config.yml:/config.yml
+    ports:
+      - 8080:8080

@@ -1,0 +1,10 @@
+# Sample configuration file
+---
+products:
+  - name: mongo # Product name, verify on https://endoflife.date/
+    releases: # Release cycles you want to track, verify cycle name on https://endoflife.date/
+      - "8.0"
+      - "7.0"
+  - name: redis
+    releases:
+      - latest
