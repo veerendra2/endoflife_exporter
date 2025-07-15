@@ -29,7 +29,7 @@ func LoadConfig(filename string) (*Config, error) {
 	}
 
 	if config.Products == nil {
-		return nil, fmt.Errorf("no products found in the configuration")
+		return nil, fmt.Errorf("no products defined in the configuration")
 	}
 
 	for i, product := range config.Products {

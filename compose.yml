@@ -10,6 +10,7 @@ services:
     environment:
       ADDRESS: ":8080"
       CONFIG_FILE: "/config.yml"
+      LOG_FORMAT: "console"
     volumes:
       - ./config.yml:/config.yml
     ports:
