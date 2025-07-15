@@ -67,8 +67,6 @@ products:
 			filepath := filepath.Join(tempDir, "no_release_cycle_config.yaml")
 			Expect(os.WriteFile(filepath, []byte(configContent), 0644)).To(Succeed())
 
-			fmt.Println(configContent)
-
 			cfg, err := LoadConfig(filepath)
 
 			Expect(err).To(BeNil())
