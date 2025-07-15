@@ -43,7 +43,7 @@ products:
 			Expect(cfg.Products[0].Name).To(Equal("mongo"))
 		})
 
-		It("should be failed when 'products' list is empty", func() {
+		It("should fail when the 'products' list is empty", func() {
 			configContent := `---
 products:`
 
