@@ -1,0 +1,127 @@
+---
+networks:
+  monitoring:
+    name: monitoring
+    attachable: true
+
+volumes:
+  prometheus_data:
+    name: prometheus_data
+  grafana_data:
+    name: grafana_data
+  dashboards:
+    name: dashboards
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    hostname: prometheus
+    container_name: prometheus
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    configs:
+      - source: prometheus.yml
+        target: /etc/prometheus/prometheus.yml
+        mode: 0444
+    volumes:
+      - prometheus_data:/prometheus
+    networks:
+      - monitoring
+    ports:
+      - 9090:9090
+
+  grafana:
+    image: grafana/grafana:latest
+    hostname: grafana
+    container_name: grafana
+    restart: unless-stopped
+    depends_on:
+      prometheus:
+        condition: service_started
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: changeme
+      GF_AUTH_ANONYMOUS_ENABLED: true
+    configs:
+      - source: dashboard.yml
+        target: /etc/grafana/provisioning/dashboards/dashboard.yml
+        mode: 0444
+      - source: datasource.yml
+        target: /etc/grafana/provisioning/datasources/datasource.yml
+        mode: 0444
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - dashboards:/etc/grafana/dashboards
+    networks:
+      - monitoring
+    ports:
+      - 3000:3000
+
+  endoflifeexporter:
+    image: ghcr.io/veerendra2/endoflife_exporter:latest
+    hostname: endoflifeexporter
+    container_name: endoflifeexporter
+    restart: unless-stopped
+    depends_on:
+      prometheus:
+        condition: service_started
+    environment:
+      ADDRESS: ":8080"
+      CONFIG_FILE: "/config.yml"
+      LOG_FORMAT: "console"
+    volumes:
+      - ./sample.config.yml:/config.yml
+    networks:
+      - monitoring
+    ports:
+      - 8080:8080
+
+configs:
+  datasource.yml:
+    name: datasource.yml
+    content: |
+      ---
+      apiVersion: 1
+
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          access: proxy
+          orgId: 1
+          url: http://prometheus:9090/prometheus
+          basicAuth: false
+          isDefault: true
+          editable: true
+
+  dashboard.yml:
+    name: dashboard.yml
+    content: |
+      ---
+      apiVersion: 1
+
+      providers:
+        - name: 'Prometheus'
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          editable: true
+          allowUiUpdates: true
+          options:
+            path: /etc/grafana/dashboards
+
+  prometheus.yml:
+    name: prometheus.yml
+    content: |
+      ---
+      global:
+        scrape_interval: 15s
+        evaluation_interval: 15s
+      scrape_configs:
+        - job_name: "endoflifeexporter"
+          scrape_interval: 2m
+          scrape_timeout: 1m
+          static_configs:
+            - targets: ["endoflifeexporter:8080"]
