@@ -1,6 +1,6 @@
 # ⏳ End-of-Life Exporter
 
-A Prometheus exporter that tracks product versions and their End-of-Life (EOL) dates using the [endoflife.date](https://endoflife.date/docs/api/v1/) API. Information is fetched only when Prometheus scrapes the `/metrics` endpoint.
+A Prometheus exporter that exposes product versions and their End-of-Life (EOL) dates as metrics using the [endoflife.date](https://endoflife.date/docs/api/v1/) API. Information is fetched only when Prometheus scrapes the `/metrics` endpoint.
 
 ## ⚙️ Configuration
 
@@ -44,6 +44,7 @@ services:
     environment:
       ADDRESS: ":8080"
       CONFIG_FILE: "/config.yml"
+      LOG_FORMAT: "console"
     volumes:
       - ./config.yml:/config.yml
     ports:
@@ -66,6 +67,31 @@ scrape_configs:
     scrape_timeout: 2m # If you have a long list of products, you might want to increase the timeout.
     static_configs:
       - targets: ["endoflife_exporter:8080"]
+```
+
+### Alerting Rules Example
+
+```yaml
+groups:
+  - name: endoflife.rules
+    rules:
+      - alert: ProductVersionEOLWarning
+        expr: endoflife_eol_from_timestamp_seconds - time() < 30 * 24 * 60 * 60 and endoflife_eol_from_timestamp_seconds > time()
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Product version nearing End-of-Life (EOL)"
+          description: 'Product ''{{ $labels.product_name }}'' release cycle ''{{ $labels.release_cycle_name }}'' will reach its End-of-Life in less than 30 days (on {{ ($value | timestamp "2006-01-02") }}).'
+
+      - alert: ProductVersionEOLReached
+        expr: endoflife_eol_from_timestamp_seconds < time()
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Product version has reached End-of-Life (EOL)"
+          description: 'Product ''{{ $labels.product_name }}'' release cycle ''{{ $labels.release_cycle_name }}'' reached its End-of-Life on {{ ($value | timestamp "2006-01-02") }}.'
 ```
 
 ## 📊 Metrics
