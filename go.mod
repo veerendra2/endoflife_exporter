@@ -1,6 +1,6 @@
 module github.com/veerendra2/endoflife_exporter
 
-go 1.24.4
+go 1.24.5
 
 require (
 	github.com/alecthomas/kong v1.12.0
@@ -8,7 +8,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.23.4
 	github.com/onsi/gomega v1.36.3
 	github.com/prometheus/client_golang v1.22.0
-	github.com/veerendra2/gopackages v0.0.0-20250709110436-28fbcc02b821
+	github.com/veerendra2/gopackages v1.0.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

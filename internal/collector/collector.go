@@ -76,7 +76,7 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-
+	
 	for _, product := range e.config.Products {
 		for _, release := range product.Releases {
 			relInfo, err := e.eolClient.GetRelease(ctx, product.Name, release)

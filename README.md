@@ -1,6 +1,6 @@
 # ⏳ End-of-Life Exporter
 
-A Prometheus exporter that exposes product versions and their End-of-Life (EOL) dates as metrics using the [endoflife.date](https://endoflife.date/docs/api/v1/) API. Information is fetched only when Prometheus scrapes the `/metrics` endpoint.
+A Prometheus exporter that exposes product versions and their End-of-Life (EOL) dates as metrics using the [endoflife.date](https://endoflife.date) API. Information is fetched only when Prometheus scrapes the `/metrics` endpoint.
 
 ## ⚙️ Configuration
 
@@ -75,23 +75,13 @@ scrape_configs:
 groups:
   - name: endoflife.rules
     rules:
-      - alert: ProductVersionEOLWarning
-        expr: endoflife_eol_from_timestamp_seconds - time() < 30 * 24 * 60 * 60 and endoflife_eol_from_timestamp_seconds > time()
-        for: 0m
+      - alert: ProductVersionEOLReachingSoon
+        expr: avg by (product_name, release_cycle_name) (endoflife_eol_from_timestamp_seconds - time()) < (21 * 24 * 3600)
+        for: 1h
         labels:
-          severity: warning
+          severity: error
         annotations:
-          summary: "Product version nearing End-of-Life (EOL)"
-          description: 'Product ''{{ $labels.product_name }}'' release cycle ''{{ $labels.release_cycle_name }}'' will reach its End-of-Life in less than 30 days (on {{ ($value | timestamp "2006-01-02") }}).'
-
-      - alert: ProductVersionEOLReached
-        expr: endoflife_eol_from_timestamp_seconds < time()
-        for: 0m
-        labels:
-          severity: critical
-        annotations:
-          summary: "Product version has reached End-of-Life (EOL)"
-          description: 'Product ''{{ $labels.product_name }}'' release cycle ''{{ $labels.release_cycle_name }}'' reached its End-of-Life on {{ ($value | timestamp "2006-01-02") }}.'
+          message: 'Product ''{{ $labels.product_name }}'' release cycle ''{{ $labels.release_cycle_name }}'' reached its End-of-Life on {{ ($value | timestamp "2006-01-02") }}.'
 ```
 
 ## 📊 Metrics
@@ -101,14 +91,17 @@ Here are some example metrics exposed by the exporter:
 ```
 # HELP endoflife_eol_from_timestamp_seconds Unix timestamp when a product's release cycle reaches its End-of-Life (EOL) or maintenance end.
 # TYPE endoflife_eol_from_timestamp_seconds gauge
-endoflife_eol_from_timestamp_seconds{product_name="mongo",release_cycle_name="8.1"} 1.7591904e+09
+endoflife_eol_from_timestamp_seconds{product_name="mongo",release_cycle_name="8.0"} 0
+
 # HELP endoflife_latest_version_timestamp_seconds Unix timestamp of the latest version release date for a product's release cycle.
 # TYPE endoflife_latest_version_timestamp_seconds gauge
-endoflife_latest_version_timestamp_seconds{product_name="mongo",release_cycle_name="8.1"} 1.751328e+09
+endoflife_latest_version_timestamp_seconds{product_name="mongo",release_cycle_name="8.0"} 1.7527104e+09
+
 # HELP endoflife_product_info Information about the End-of-Life (EOL) status and details of a product.
 # TYPE endoflife_product_info gauge
-endoflife_product_info{is_eol="false",is_lts="false",is_maintained="true",latest_version="8.1.2",product_name="mongo",release_cycle_name="8.1"} 1
+endoflife_product_info{is_eol="false",is_lts="false",is_maintained="true",latest_version="8.0.12",product_name="mongo",release_cycle_name="8.0"} 1
+
 # HELP endoflife_release_cycle_timestamp_seconds Unix timestamp of the release cycle's official release date.
 # TYPE endoflife_release_cycle_timestamp_seconds gauge
-endoflife_release_cycle_timestamp_seconds{product_name="mongo",release_cycle_name="8.1"} 1.7503776e+09
+endoflife_release_cycle_timestamp_seconds{product_name="mongo",release_cycle_name="8.0"} 1.7278272e+09
 ```

@@ -101,7 +101,7 @@ func (c *client) GetProductDetails(ctx context.Context, productName string) ([]R
 func getReleaseDetails(productRelease ProductRelease) ReleaseDetails {
 	latestVersion := "N/A"
 	latestVersionDate := time.Unix(0, 0)
-	eolFrom := time.Unix(0, 0)
+	eolFrom := time.Unix(2524608000, 0) // Default is 2050-01-01
 	releaseCycleDate := time.Unix(0, 0)
 
 	if latest, err := productRelease.Latest.AsProductVersion(); err == nil {
