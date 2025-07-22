@@ -60,7 +60,9 @@ services:
       - 3000:3000
 
   endoflifeexporter:
-    image: ghcr.io/veerendra2/endoflife_exporter:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     hostname: endoflifeexporter
     container_name: endoflifeexporter
     restart: unless-stopped

@@ -2,6 +2,8 @@
 
 A Prometheus exporter that exposes product versions and their End-of-Life (EOL) dates as metrics using the [endoflife.date](https://endoflife.date) API. Information is fetched only when Prometheus scrapes the `/metrics` endpoint.
 
+![Dashboard Screenshot](./dashboard/dashboard-screenshot.png)
+
 ## ⚙️ Configuration
 
 Configure products and their release cycles as shown below.

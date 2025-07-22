@@ -15,11 +15,25 @@
       }
     ]
   },
+  "description": "https://endoflife.date/",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": 1,
-  "links": [],
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": false,
+      "title": "Github Repo",
+      "tooltip": "",
+      "type": "link",
+      "url": "https://github.com/veerendra2/endoflife_exporter"
+    }
+  ],
   "panels": [
     {
       "datasource": {
@@ -55,12 +69,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
-        "w": 5,
+        "h": 10,
+        "w": 12,
         "x": 0,
         "y": 0
       },
-      "id": 1,
+      "id": 4,
       "options": {
         "cellHeight": "sm",
         "footer": {
@@ -71,56 +85,104 @@
           ],
           "show": false
         },
-        "showHeader": false
+        "frameIndex": 2,
+        "showHeader": true
       },
       "pluginVersion": "12.0.2",
       "targets": [
+        {
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "endoflife_product_info{product_name=\"$product\"}",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "exemplar": true,
-          "expr": "max(endoflife_product_info{product_name=\"$product\",release_cycle_name=\"$release_cycle\"}) by (is_maintained,is_eol,is_eol)",
-          "format": "table",
+          "expr": "endoflife_eol_from_timestamp_seconds{product_name=\"$product\"}",
+          "hide": false,
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Products Details",
-      "transformations": [
-        {
-          "id": "filterFieldsByName",
-          "options": {
-            "include": {
-              "names": [
-                "is_eol",
-                "is_maintained"
-              ]
-            }
-          }
+          "refId": "B"
         },
         {
-          "id": "reduce",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "endoflife_release_cycle_timestamp_seconds",
+          "hide": true,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "endoflife_latest_version_timestamp_seconds",
+          "hide": true,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "D"
+        }
+      ],
+      "title": "New panel",
+      "transformations": [
+        {
+          "id": "joinByField",
           "options": {
-            "labelsToFields": false,
-            "reducers": [
-              "last"
-            ]
+            "byField": "product_name",
+            "mode": "outer"
           }
         },
         {
           "id": "organize",
           "options": {
-            "excludeByName": {},
+            "excludeByName": {
+              "Time": true,
+              "Value": true,
+              "__name__": true,
+              "instance": true,
+              "is_eol": false,
+              "job": true
+            },
             "includeByName": {},
-            "indexByName": {},
+            "indexByName": {
+              "Time": 6,
+              "Value": 10,
+              "__name__": 8,
+              "instance": 7,
+              "is_eol": 3,
+              "is_lts": 4,
+              "is_maintained": 5,
+              "job": 9,
+              "latest_version": 2,
+              "product_name": 0,
+              "release_cycle_name": 1
+            },
             "renameByName": {
-              "Field": "Product Status",
-              "Last": "Value"
+              "is_eol": "End-of-Life",
+              "is_lts": "LTS",
+              "is_maintained": "Maintained",
+              "job": "",
+              "latest_version": "Latest Version",
+              "product_name": "Product Name",
+              "release_cycle_name": "Release Cycle Name"
             }
           }
         }
@@ -132,11 +194,46 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "description": "End of life date",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
@@ -149,111 +246,91 @@
           },
           "unit": "dateTimeAsIso"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": ""
+            },
+            "properties": []
+          }
+        ]
       },
       "gridPos": {
-        "h": 5,
-        "w": 5,
-        "x": 5,
+        "h": 10,
+        "w": 12,
+        "x": 12,
         "y": 0
       },
-      "id": 2,
+      "id": 5,
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "12.0.2",
       "targets": [
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "endoflife_eol_from_timestamp_seconds{product_name=\"$product\", release_cycle_name=\"$release_cycle\"} * 1000",
-          "format": "time_series",
+          "expr": "max(endoflife_eol_from_timestamp_seconds{product_name=\"$product\"} * 1000) by (release_cycle_name)",
           "instant": false,
-          "legendFormat": "__auto",
+          "legendFormat": "{{release_cycle_name}}-EOL",
           "range": true,
           "refId": "A"
-        }
-      ],
-      "title": "EOL Data",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "description": "Product release date",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              }
-            ]
-          },
-          "unit": "dateTimeAsIso"
         },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 5,
-        "x": 10,
-        "y": 0
-      },
-      "id": 3,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "12.0.2",
-      "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "endoflife_release_cycle_timestamp_seconds{product_name=\"$product\", release_cycle_name=\"$release_cycle\"} * 1000",
+          "expr": "max(endoflife_release_cycle_timestamp_seconds{product_name=\"$product\"} * 1000) by (release_cycle_name)",
           "format": "time_series",
+          "hide": false,
           "instant": false,
-          "legendFormat": "__auto",
+          "legendFormat": "{{release_cycle_name}}-Release",
           "range": true,
-          "refId": "A"
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "time() * 1000",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Now",
+          "range": true,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "max(endoflife_latest_version_timestamp_seconds{product_name=\"$product\"}) by (product_name)",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "{{release_cycle}} Latest Version",
+          "range": true,
+          "refId": "D"
         }
       ],
-      "title": "Release Date",
-      "type": "stat"
+      "title": "Versions Timeline",
+      "type": "timeseries"
     }
   ],
   "preload": false,
@@ -279,35 +356,16 @@
         "regex": "",
         "sort": 1,
         "type": "query"
-      },
-      {
-        "current": {
-          "text": "7.0",
-          "value": "7.0"
-        },
-        "definition": "label_values(endoflife_product_info{product_name=\"$product\"},release_cycle_name)",
-        "label": "Release Cycle",
-        "name": "release_cycle",
-        "options": [],
-        "query": {
-          "qryType": 1,
-          "query": "label_values(endoflife_product_info{product_name=\"$product\"},release_cycle_name)",
-          "refId": "PrometheusVariableQueryEditor-VariableQuery"
-        },
-        "refresh": 1,
-        "regex": "",
-        "sort": 1,
-        "type": "query"
       }
     ]
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-5m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "New dashboard",
+  "title": "End of Life Exporter",
   "uid": "4bea73cf-7911-48e6-986b-c775a21a6bb2",
-  "version": 12
+  "version": 21
 }
