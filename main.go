@@ -16,22 +16,22 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/veerendra2/endoflife_exporter/internal/collector"
 	"github.com/veerendra2/endoflife_exporter/internal/config"
-	"github.com/veerendra2/gopackages/slogsetup"
+	"github.com/veerendra2/gopackages/slogger"
 )
 
 const AppName = "endoflife_exporter"
 
 var cli struct {
-	Address string           `env:"ADDRESS" default:":8080" help:"The address where the server should listen on."`
-	Config  string           `env:"CONFIG_FILE" default:"config.yml" help:"Configuration file path"`
-	Log     slogsetup.Config `embed:"" prefix:"log." envprefix:"LOG_"`
+	Address string         `env:"ADDRESS" default:":8080" help:"The address where the server should listen on."`
+	Config  string         `env:"CONFIG_FILE" default:"config.yml" help:"Configuration file path"`
+	Log     slogger.Config `embed:"" prefix:"log." envprefix:"LOG_"`
 }
 
 func main() {
 	kongCtx := kong.Parse(&cli, kong.Name(AppName))
 	kongCtx.FatalIfErrorf(kongCtx.Error)
 
-	slog.SetDefault(slogsetup.New(cli.Log))
+	slog.SetDefault(slogger.New(cli.Log))
 
 	slog.Info("Loading configuration", "file", cli.Config)
 	cfg, err := config.LoadConfig(cli.Config)

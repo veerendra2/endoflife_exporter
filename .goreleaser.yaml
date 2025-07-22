@@ -33,19 +33,6 @@ archives:
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
 
-brews:
-  - name: endoflife_exporter
-    url_template: "https://github.com/veerendra2/endoflife_exporter/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-    directory: Formula
-    homepage: "https://github.com/veerendra2/endoflife_exporter"
-    description: "A Prometheus exporter that exposes product versions and their End-of-Life (EOL) dates as metrics using the https://endoflife.date API"
-    license: "Apache 2.0"
-    repository:
-      owner: veerendra2
-      name: homebrew-tap
-      branch: main
-      token: "{{ .Env.GITHUB_TOKEN }}"
-
 changelog:
   sort: asc
   filters:

@@ -43,7 +43,7 @@ generate: oapi-codegen ## Generate Go types from the OpenAPI spec.
 
 .PHONY: run
 run: ## Run the application from your host (without building a binary first).
-	go run main.go
+	go run main.go --log.format=console --config=sample.config.yml
 
 .PHONY: clean
 clean: ## Remove generated files and build artifacts.
