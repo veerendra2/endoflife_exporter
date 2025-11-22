@@ -4,7 +4,7 @@ A Prometheus exporter that exposes product versions and their End-of-Life (EOL) 
 
 ![Dashboard Screenshot](./dashboard/dashboard-screenshot.png)
 
-## aConfiguration
+## Configuration
 
 Configure products and their release cycles as shown below.
 
