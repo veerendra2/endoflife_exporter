@@ -1,11 +1,12 @@
+---
 name: CI
 
 on:
   pull_request:
 
 jobs:
-  lint-test:
-    name: Lint SourceCode and Run Tests
+  golangci-lint:
+    name: Lint Source Code
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
@@ -18,11 +19,28 @@ jobs:
           cache: true
 
       - name: Run Linter
-        uses: golangci/golangci-lint-action@v9
+        uses: golangci/golangci-lint-action@v8
         with:
           version: latest
           working-directory: ./
           args: --timeout 3m
 
-      - name: Test
-        run: make test
+  run-tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v5
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: "go.mod"
+          cache: true
+
+      - name: Install Task
+        uses: go-task/setup-task@v1
+
+      - name: Run Tests
+        run: |
+          task tests
