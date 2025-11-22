@@ -8,3 +8,7 @@ products:
   - name: redis
     releases:
       - latest
+  - name: ubuntu
+    all_releases: true # Fetch all available release cycles for this product (ignores 'releases' field if set)
+    releases:
+      - latest

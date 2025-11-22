@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -30,48 +31,57 @@ type client struct {
 }
 
 type Client interface {
-	doRequest(ctx context.Context, requestUrl string, target any) error
+	doRequest(ctx context.Context, requestUrl string) ([]byte, error)
 	GetProductDetails(ctx context.Context, productName string) ([]ReleaseDetails, error)
 	GetRelease(ctx context.Context, productName string, cycleName string) (ReleaseDetails, error)
 }
 
-func (c *client) doRequest(ctx context.Context, requestUrl string, target any) error {
+// doRequest does HTTP request to given requestUrl and returns response body
+func (c *client) doRequest(ctx context.Context, requestUrl string) ([]byte, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestUrl, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	req.Header.Set("accept", "application/json")
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			slog.Warn("Error while closing the reponse body", slog.Any("err", err))
+			slog.Warn("Error while closing the response body", slog.Any("err", err))
 		}
 	}()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("API returned non-OK status: %d %s", resp.StatusCode, resp.Status)
+		return nil, fmt.Errorf("API returned non-OK status: %d %s", resp.StatusCode, resp.Status)
 	}
 
-	if err = json.NewDecoder(resp.Body).Decode(target); err != nil {
-		return fmt.Errorf("failed to decode API response: %w", err)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
-	return nil
+
+	return body, nil
 }
 
+// GetRelease retrieves details for a specific release cycle of a product.
+// Endpoint: GET /products/{productName}/releases/{cycleName}
 func (c *client) GetRelease(ctx context.Context, productName string, cycleName string) (ReleaseDetails, error) {
 	requestUrl := *c.baseUrl
 	releaseDetails := ReleaseDetails{}
 	productRelease := ProductReleaseResponse{}
 
-	// https://endoflife.date/api/v1/products/{productName}/releases/{cycleName}
 	requestUrl.Path = path.Join(requestUrl.Path, "products", productName, "releases", cycleName)
 
-	if err := c.doRequest(ctx, requestUrl.String(), &productRelease); err != nil {
+	body, err := c.doRequest(ctx, requestUrl.String())
+	if err != nil {
 		return releaseDetails, err
+	}
+
+	if err := json.Unmarshal(body, &productRelease); err != nil {
+		return releaseDetails, fmt.Errorf("failed to decode API response: %w", err)
 	}
 
 	releaseDetails = getReleaseDetails(productRelease.Result)
@@ -79,16 +89,22 @@ func (c *client) GetRelease(ctx context.Context, productName string, cycleName s
 	return releaseDetails, nil
 }
 
+// GetProductDetails retrieves all release cycles for a given product.
+// Endpoint: GET /products/{productName}
 func (c *client) GetProductDetails(ctx context.Context, productName string) ([]ReleaseDetails, error) {
 	requestUrl := *c.baseUrl
 	releaseDetails := []ReleaseDetails{}
 	product := ProductResponse{}
 
-	// https://endoflife.date/api/v1/products/{productName}
 	requestUrl.Path = path.Join(requestUrl.Path, "products", productName)
 
-	if err := c.doRequest(ctx, requestUrl.String(), &product); err != nil {
+	body, err := c.doRequest(ctx, requestUrl.String())
+	if err != nil {
 		return releaseDetails, err
+	}
+
+	if err := json.Unmarshal(body, &product); err != nil {
+		return releaseDetails, fmt.Errorf("failed to decode API response: %w", err)
 	}
 
 	for _, productRelease := range product.Result.Releases {
@@ -98,6 +114,7 @@ func (c *client) GetProductDetails(ctx context.Context, productName string) ([]R
 	return releaseDetails, nil
 }
 
+// getReleaseDetails converts a ProductRelease from the API response into a ReleaseDetails struct.
 func getReleaseDetails(productRelease ProductRelease) ReleaseDetails {
 	latestVersion := "N/A"
 	latestVersionDate := time.Unix(0, 0)

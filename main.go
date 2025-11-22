@@ -17,6 +17,7 @@ import (
 	"github.com/veerendra2/endoflife_exporter/internal/collector"
 	"github.com/veerendra2/endoflife_exporter/internal/config"
 	"github.com/veerendra2/gopackages/slogger"
+	"github.com/veerendra2/gopackages/version"
 )
 
 const AppName = "endoflife_exporter"
@@ -32,6 +33,9 @@ func main() {
 	kongCtx.FatalIfErrorf(kongCtx.Error)
 
 	slog.SetDefault(slogger.New(cli.Log))
+
+	slog.Info("Version information", version.Info()...)
+	slog.Info("Build context", version.BuildContext()...)
 
 	slog.Info("Loading configuration", "file", cli.Config)
 	cfg, err := config.LoadConfig(cli.Config)

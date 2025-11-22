@@ -561,7 +561,7 @@ components:
 
             This field is not provided when the product does not have an extended support phase.
             This field is null when the release cycle is not eligible for extended support.
-          type: string
+          type: boolean
           nullable: true
           examples:
             - true
