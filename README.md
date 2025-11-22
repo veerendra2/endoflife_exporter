@@ -1,10 +1,10 @@
-# ⏳ End-of-Life Exporter
+# End-of-Life Exporter
 
 A Prometheus exporter that exposes product versions and their End-of-Life (EOL) dates as metrics using the [endoflife.date](https://endoflife.date) API. Information is fetched only when Prometheus scrapes the `/metrics` endpoint.
 
 ![Dashboard Screenshot](./dashboard/dashboard-screenshot.png)
 
-## ⚙️ Configuration
+## aConfiguration
 
 Configure products and their release cycles as shown below.
 
@@ -18,7 +18,7 @@ products:
       - "8.0"
 ```
 
-## 🚀 Deployment
+## Deployment
 
 ### Usage
 
@@ -57,7 +57,7 @@ services:
 docker compose up -d
 ```
 
-## 🔥 Prometheus Configuration
+## Prometheus Configuration
 
 Below is an example scrape configuration for Prometheus.
 
@@ -86,7 +86,7 @@ groups:
           message: 'Product ''{{ $labels.product_name }}'' release cycle ''{{ $labels.release_cycle_name }}'' reached its End-of-Life on {{ ($value | timestamp "2006-01-02") }}.'
 ```
 
-## 📊 Metrics
+## Metrics
 
 Here are some example metrics exposed by the exporter:
 
@@ -107,3 +107,45 @@ endoflife_product_info{is_eol="false",is_lts="false",is_maintained="true",latest
 # TYPE endoflife_release_cycle_timestamp_seconds gauge
 endoflife_release_cycle_timestamp_seconds{product_name="mongo",release_cycle_name="8.0"} 1.7278272e+09
 ```
+
+## Development
+
+Install [task](https://taskfile.dev/docs/installation)
+
+```bash
+go mod tidy
+
+# Install dependencies
+task gen
+
+# Run tests
+task test
+
+# List all tasks
+task --list
+task: Available tasks for this project:
+* all:                   Run comprehensive checks: format, lint, security and test
+* build:                 Build the application binary for the current platform
+* build-docker:          Build Docker image
+* build-platforms:       Build the application binaries for multiple platforms and architectures
+* fmt:                   Formats all Go source files
+* gen:                   Generates Go types from OAPI spec      (aliases: generate)
+* install:               Install required tools and dependencies
+* lint:                  Run static analysis and code linting using golangci-lint
+* run:                   Runs the main application
+* security:              Run security vulnerability scan
+* test:                  Runs all tests in the project      (aliases: tests)
+* vet:                   Examines Go source code and reports suspicious constructs
+```
+
+Update OpenAPI
+
+- Check https://endoflife.date/docs/api/v1/ for changes.
+- Update pkg/endoflife/openapi.yaml if needed and run `task gen` again.
+- The upstream OpenAPI spec has a type mismatch: `isEoes` is defined as `string` but the API returns `boolean`
+  - **Workaround**: Before running `task gen`, manually change the type at [line 564 in openapi.yaml](./pkg/endoflife/openapi.yaml#L564):
+    ```yaml
+    isEoes:
+      type: boolean # Changed from 'string'
+      nullable: true
+    ```

@@ -76,18 +76,32 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	
+
 	for _, product := range e.config.Products {
-		for _, release := range product.Releases {
-			relInfo, err := e.eolClient.GetRelease(ctx, product.Name, release)
+		var releases []endoflife.ReleaseDetails
+		var err error
+
+		if product.AllReleases {
+			// Fetch all release cycles for the product
+			releases, err = e.eolClient.GetProductDetails(ctx, product.Name)
 			if err != nil {
-				slog.Error("Failed to get release details for product",
-					slog.String("product_name", product.Name),
-					slog.String("release_name", release),
-					slog.Any("err", err))
+				slog.Error("Failed to get all release cycles", "product_name", product.Name, "err", err)
 				continue
 			}
+		} else {
+			// Fetch specific releases
+			for _, releaseName := range product.Releases {
+				relInfo, err := e.eolClient.GetRelease(ctx, product.Name, releaseName)
+				if err != nil {
+					slog.Error("Failed to get release cycle", "product_name", product.Name, "release_name", releaseName, "err", err)
+					continue
+				}
+				releases = append(releases, relInfo)
+			}
+		}
 
+		// Process and export metrics for all releases
+		for _, relInfo := range releases {
 			ch <- prometheus.MustNewConstMetric(
 				EndOfLifeProductInfoDesc,
 				prometheus.GaugeValue,

@@ -161,7 +161,7 @@ type ProductRelease struct {
 
 	// IsEoes Whether the extended support phase is over for the release cycle.
 	// This field is not provided when the product does not have an extended support phase. This field is null when the release cycle is not eligible for extended support.
-	IsEoes *string `json:"isEoes"`
+	IsEoes *bool `json:"isEoes"`
 
 	// IsEol Whether the release cycle is EOL.
 	IsEol bool `json:"isEol"`
