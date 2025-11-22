@@ -9,6 +9,6 @@ RUN /app/bin/task build
 FROM alpine:3.22.2
 RUN apk update && apk add --no-cache ca-certificates
 WORKDIR /
-COPY --from=builder /app/dist/endoflife_exporter .
+COPY --from=app_builder /app/dist/endoflife_exporter .
 USER nobody
 ENTRYPOINT ["/endoflife_exporter"]
