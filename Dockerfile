@@ -1,4 +1,4 @@
-FROM golang:1.25.3 AS app_builder
+FROM golang:1.25.4 AS app_builder
 WORKDIR /app
 RUN curl -sL https://taskfile.dev/install.sh | sh
 COPY go.mod go.sum ./
