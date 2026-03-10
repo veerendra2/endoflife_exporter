@@ -1,6 +1,6 @@
 module github.com/veerendra2/endoflife_exporter
 
-go 1.24.5
+go 1.26.0
 
 require (
 	github.com/alecthomas/kong v1.14.0
