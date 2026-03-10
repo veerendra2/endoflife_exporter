@@ -21,11 +21,26 @@ builds:
       - CGO_ENABLED=0
     ldflags:
       - "-X github.com/veerendra2/gopackages/version.Version={{.Version}}"
-      - "-X github.com/veerendra2/gopackages/version.Revision={{.Commit}}"
+      - "-X github.com/veerendra2/gopackages/version.Revision={{.ShortCommit}}"
       - "-X github.com/veerendra2/gopackages/version.Branch={{.Branch}}"
-      - "-X github.com/veerendra2/gopackages/version.BuildUser={{.Env.USER}}"
+      - '-X github.com/veerendra2/gopackages/version.BuildUser={{envOrDefault "USER" "ci"}}'
       - "-X github.com/veerendra2/gopackages/version.BuildDate={{.Date}}"
     mod_timestamp: "{{ .CommitTimestamp }}"
+
+kos:
+  - id: distroless-image
+    build: binaries
+    repositories:
+      - ghcr.io/veerendra2/endoflife_exporter
+    tags:
+      - "{{.Version}}"
+      - latest
+    bare: true
+    preserve_import_paths: false
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    base_image: gcr.io/distroless/static:nonroot
 
 archives:
   - formats: ["zip"]
