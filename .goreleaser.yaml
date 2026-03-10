@@ -9,8 +9,8 @@ before:
     - go fmt ./...
 
 builds:
-  - id: endoflife_exporter
-    main: main.go
+  - id: binaries
+    main: .
     goos:
       - linux
       - darwin
