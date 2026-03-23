@@ -39,7 +39,7 @@ jobs:
           cache: true
 
       - name: Install Task
-        uses: go-task/setup-task@v1
+        uses: go-task/setup-task@v2
 
       - name: Run Tests
         run: |
