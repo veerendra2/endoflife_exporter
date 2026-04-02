@@ -2,7 +2,7 @@
 # Release versions use distroless images built via GoReleaser with ko
 # See .goreleaser.yml
 #
-FROM golang:1.26.0 AS app_builder
+FROM golang:1.26.1 AS app_builder
 WORKDIR /app
 RUN curl -sL https://taskfile.dev/install.sh | sh
 COPY go.mod go.sum ./
