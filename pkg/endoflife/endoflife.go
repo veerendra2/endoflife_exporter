@@ -50,7 +50,7 @@ func (c *client) doRequest(ctx context.Context, requestUrl string) ([]byte, erro
 	}
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			slog.Warn("Error while closing the response body", slog.Any("err", err))
+			slog.Warn("Error while closing the response body", "error", err)
 		}
 	}()
 
@@ -117,14 +117,16 @@ func (c *client) GetProductDetails(ctx context.Context, productName string) ([]R
 // getReleaseDetails converts a ProductRelease from the API response into a ReleaseDetails struct.
 func getReleaseDetails(productRelease ProductRelease) ReleaseDetails {
 	latestVersion := "N/A"
-	latestVersionDate := time.Unix(0, 0)
-	eolFrom := time.Unix(2524608000, 0) // Default is 2050-01-01
+	latestVersionDate := time.Unix(2524608000, 0) // Default is 2050-01-01 (same as EOL default)
+	eolFrom := time.Unix(2524608000, 0)           // Default is 2050-01-01
 	releaseCycleDate := time.Unix(0, 0)
 
-	if latest, err := productRelease.Latest.AsProductVersion(); err == nil {
-		latestVersion = latest.Name
-		if parsedDate, err := time.Parse("2006-01-02", latest.Date.String()); err == nil {
-			latestVersionDate = parsedDate
+	if productRelease.Latest != nil {
+		latestVersion = productRelease.Latest.Name
+		if productRelease.Latest.Date != nil {
+			if parsedDate, err := time.Parse("2006-01-02", productRelease.Latest.Date.String()); err == nil {
+				latestVersionDate = parsedDate
+			}
 		}
 	}
 

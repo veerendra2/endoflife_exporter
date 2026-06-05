@@ -86,7 +86,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 			// Fetch all release cycles for the product
 			releases, err = e.eolClient.GetProductDetails(ctx, product.Name)
 			if err != nil {
-				slog.Error("Failed to get all release cycles", "product_name", product.Name, "err", err)
+				slog.Error("Failed to get all release cycles", "product_name", product.Name, "error", err)
 				continue
 			}
 		} else {
@@ -94,7 +94,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 			for _, releaseName := range product.Releases {
 				relInfo, err := e.eolClient.GetRelease(ctx, product.Name, releaseName)
 				if err != nil {
-					slog.Error("Failed to get release cycle", "product_name", product.Name, "release_name", releaseName, "err", err)
+					slog.Error("Failed to get release cycle", "product_name", product.Name, "release_name", releaseName, "error", err)
 					continue
 				}
 				releases = append(releases, relInfo)

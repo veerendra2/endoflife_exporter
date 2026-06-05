@@ -1,26 +1,12 @@
 # End-of-Life Exporter
 
+<p align="center">
+  <img src="./assets/endoflife.png" width="90"/>
+  <img src="./assets/prometheus.png" width="90"/>
+  <br>
+</p>
+
 A Prometheus exporter that exposes product versions and their End-of-Life (EOL) dates as metrics using the [endoflife.date](https://endoflife.date) API. Information is fetched only when Prometheus scrapes the `/metrics` endpoint.
-
-![Dashboard Screenshot](./dashboard/dashboard-screenshot.png)
-
-## Configuration
-
-Configure products and their release cycles as shown below.
-
-> 💡 Always verify product names on [endoflife.date](https://endoflife.date/). If you don't specify a release, it defaults to the `latest` available one.
-
-```yaml
----
-products:
-  - name: mongo
-    releases:
-      - "8.0"
-      - "7.0"
-  - name: redis
-  - name: ubuntu
-    all_releases: true
-```
 
 ## Deployment
 
@@ -29,13 +15,16 @@ products:
 ```bash
 Usage: endoflife_exporter [flags]
 
+Prometheus exporter for product versions and their End-of-Life.
+
 Flags:
-  -h, --help                   Show context-sensitive help.
-      --address=":8080"        The address where the server should listen on ($ADDRESS).
-      --config="config.yml"    Configuration file path ($CONFIG_FILE)
-      --log.format="json"      Set the output format of the logs. Must be "console" or "json" ($LOG_FORMAT).
-      --log.level=INFO         Set the log level. Must be "DEBUG", "INFO", "WARN" or "ERROR" ($LOG_LEVEL).
-      --log.add-source         Whether to add source file and line number to log records ($LOG_ADD_SOURCE).
+  -h, --help                    Show context-sensitive help.
+      --address=":8080"         The address where the server should listen on ($ADDRESS).
+      --config="config.yml"     Configuration file path ($CONFIG_FILE)
+      --log.format="console"    Set the output format of the logs. Must be "console" or "json" ($LOG_FORMAT).
+      --log.level=INFO          Set the log level. Must be "DEBUG", "INFO", "WARN" or "ERROR" ($LOG_LEVEL).
+      --log.add-source          Whether to add source file and line number to log records ($LOG_ADD_SOURCE).
+      --version                 Print version information and exit
 ```
 
 ### Docker Compose
@@ -59,6 +48,24 @@ services:
 
 ```bash
 docker compose up -d
+```
+
+## Configuration
+
+Configure products and their release cycles as shown below.
+
+> 💡 Always verify product names on [endoflife.date](https://endoflife.date/). If you don't specify a release, it defaults to the `latest` available one.
+
+```yaml
+---
+products:
+  - name: mongo
+    releases:
+      - "8.0"
+      - "7.0"
+  - name: redis
+  - name: ubuntu
+    all_releases: true
 ```
 
 ## Prometheus Configuration
@@ -92,100 +99,13 @@ groups:
 
 ## Metrics
 
-The exporter provides four key metrics to track product lifecycle information:
+See [metrics](https://github.com/veerendra2/endoflife_exporter/wiki/Metrics)
 
-### `endoflife_product_info`
+## Grafana Dashboard
 
-Product release cycle metadata with EOL status, LTS support, and maintenance state as labels.
+- [Download Grafana Dashboard Json](./assets/endoflife-grafana-dashboard.json)
 
-**Labels:**
-
-- `is_eol`: Whether the release cycle has reached end-of-life
-- `is_lts`: Whether this is a Long-Term Support (LTS) release
-- `is_maintained`: Whether the release is still receiving any form of support
-- `latest_version`: The most recent patch/minor version (e.g., "8.0.12")
-- `product_name`: Product identifier (e.g., "mongo", "ubuntu")
-- `release_cycle_name`: Release cycle identifier (e.g., "8.0", "22.04")
-
-**Use case:** Query product metadata and filter by support status
-
-```prometheus
-endoflife_product_info{is_eol="false",is_lts="false",is_maintained="true",latest_version="8.0.12",product_name="mongo",release_cycle_name="8.0"} 1
-```
-
----
-
-### `endoflife_latest_version_timestamp_seconds`
-
-Release date of the latest version in that release cycle (Unix timestamp).
-
-**Labels:**
-
-- `product_name`: Product identifier
-- `release_cycle_name`: Release cycle identifier
-- `latest_version`: The version number (e.g., "8.0.12")
-
-**Use case:** Track how recently a release cycle received updates. Useful for identifying stale or actively maintained versions.
-
-```prometheus
-endoflife_latest_version_timestamp_seconds{product_name="mongo",release_cycle_name="8.0",latest_version="8.0.12"} 1730419200
-```
-
----
-
-### `endoflife_release_cycle_timestamp_seconds`
-
-Initial release date when the release cycle was first published (Unix timestamp).
-
-**Labels:**
-
-- `product_name`: Product identifier
-- `release_cycle_name`: Release cycle identifier
-
-**Use case:** Determine the age of a release cycle. Helps in planning version upgrades based on release maturity.
-
-```prometheus
-endoflife_release_cycle_timestamp_seconds{product_name="mongo",release_cycle_name="8.0"} 1722297600
-```
-
----
-
-### `endoflife_eol_from_timestamp_seconds`
-
-End-of-life date when support for the release cycle ends (Unix timestamp).
-
-**Labels:**
-
-- `product_name`: Product identifier
-- `release_cycle_name`: Release cycle identifier
-
-**Use case:** Alert on approaching EOL dates and plan migrations. A value of `0` or far-future date (2050-01-01) indicates no EOL date is set.
-
-```prometheus
-endoflife_eol_from_timestamp_seconds{product_name="mongo",release_cycle_name="8.0"} 1893456000
-```
-
----
-
-### Example Queries
-
-**Find products approaching EOL (within 21 days):**
-
-```promql
-(endoflife_eol_from_timestamp_seconds - time()) < (21 * 24 * 3600)
-```
-
-**List all LTS versions still maintained:**
-
-```promql
-endoflife_product_info{is_lts="true", is_maintained="true"}
-```
-
-**Find versions not updated in the last 6 months:**
-
-```promql
-(time() - endoflife_latest_version_timestamp_seconds) > (180 * 24 * 3600)
-```
+![Dashboard Screenshot](./assets/dashboard-screenshot.png)
 
 ## Development
 

@@ -1,9 +1,9 @@
-openapi: 3.1.1
+openapi: 3.0.3
 
 info:
   title: endoflife API
   # This version must be kept in sync with the version in _plugins/generate-api-v1.rb.
-  version: "1.2.0"
+  version: "1.2.1"
   license:
     name: MIT License
     url: "https://github.com/endoflife-date/endoflife.date/blob/master/LICENSE"
@@ -14,20 +14,76 @@ info:
     endoflife.date documents EOL dates and support lifecycles for various products.
     The endoflife API allows users to discover and query for those products.
 
+    ## General Notes
 
-    This API documentation is available at https://endoflife.date/docs/api/v1.
-    The API changelog is available at https://github.com/endoflife-date/endoflife.date/blob/master/CHANGELOG_API.md.
+    ### API changelog
+
+    A changelog of the endoflife.date API is available in the [endoflife.date repository](https://github.com/endoflife-date/endoflife.date/blob/master/CHANGELOG_API.md).
+
+    ### Backward compatibility
+
+    The endoflife.date API is designed to be backward compatible, meaning that existing clients should continue to work
+    with new versions of the API as long as your integration:
+
+    - keep using the same major API version (`/api/v1`),
+
+    - follow the 301 redirects (products, categories or tags may occasionally be renamed),
+
+    - allow for new fields to be added in API responses (we may add new fields to support new features),
+
+    - allow for new values to be added in enumeration fields (such as the product's category).
+
+    ### Undocumented attributes
+
+    Some APIs may return more data than indicated in the documentation.
+    Do not rely on this undocumented data, there is no guarantee about it.
+
+    ### API return codes
+
+    The endoflife.date API uses standard HTTP return codes.
 
 
-    Some useful links:
+    When making HTTP requests, you can check the success or failure status of your request by using the HTTP Status Codes (i.e. 200).
+    You must not use the HTTP Status Messages or Reason-Phrases (i.e. OK), as they are optional and may not be returned in HTTP responses (see RFC9110 for more information).
 
-    - [The endoflife.date website](https://endoflife.date/)
+    The API may return the following HTTP status codes:
 
-    - [The endoflife.date repository](https://github.com/endoflife-date/endoflife.date)
+    - `200` (**OK**): The request was successful, and the response contains the requested data.
 
-    - [The endoflife.date issue tracker](https://github.com/endoflife-date/endoflife.date/issues/)
+    - `301` (**Moved Permanently**): The requested resource has been moved to a new URL.
+       The response will contain a `Location` header with the new URL.
+       This header must be followed by the client to access the resource at its new location.
 
-    - [The source API definition](https://github.com/endoflife-date/endoflife.date/blob/master/assets/openapi.yml)
+    - `304` (**Not Modified**): The resource has not been modified since the last request,
+       and the client can use its cached version.
+
+    - `404` (**Not Found**): The requested resource does not exist.
+       Note that due to some limitations the body of the response is not JSON, but our HTML error page.
+       This is not something we can change at the moment, see [#7922](https://github.com/endoflife-date/endoflife.date/issues/7922).
+
+    - `429` (**Too Many Requests**): The client has sent too many requests in a given amount of time.
+       The response may contain a `Retry-After` header indicating when the client can retry the request.
+       This is to prevent abuse of the API and ensure fair usage for all users.
+
+    Our API is hosted on [Netlify](https://www.netlify.com/), other HTTP status codes may be returned by Netlify,
+    such as `502` (**Bad Gateway**) or `503` (**Service Unavailable**).
+
+    ### Encoding
+
+    The endoflife.date API uses UTF-8 encoding for all responses.
+
+    ### Contact us
+
+    If you have any questions or need assistance with the endoflife.date API, you can contact us through the
+    [endoflife.date discussions](https://github.com/endoflife-date/endoflife.date/discussions).
+
+
+    If you find a bug or have a feature request, please open an issue in the
+    [endoflife.date issue tracker](https://github.com/endoflife-date/endoflife.date/issues).
+
+
+    We are always looking for contributors to help us improve endoflife.date. If you want to contribute,
+    please check our [contributing guidelines](https://endoflife.date/contribute).
 
 servers:
   - url: "https://endoflife.date/api/v1"
@@ -589,17 +645,17 @@ components:
             Latest version for this release cycle.
 
             This field is null when this release cycle does not have a latest version documented.
-          anyOf:
+          allOf:
             - $ref: "#/components/schemas/ProductVersion"
-            - nullable: true
+          nullable: true
         custom:
           description: >
             Custom fields for the product release cycle.
 
             This field is null when the product does not declare at least one custom fields.
-          anyOf:
+          allOf:
             - $ref: "#/components/schemas/UnknownProperties"
-            - nullable: true
+          nullable: true
           examples:
             - { "chromeVersion": "M136", "nodeVersion": "22.15" }
 
@@ -806,6 +862,7 @@ components:
       type: object
       required:
         - schema_version
+        - generated_at
         - total
         - result
       properties:
@@ -814,6 +871,12 @@ components:
           type: string
           examples:
             - "1.0.0"
+        generated_at:
+          description: The time this response was generated.
+          type: string
+          format: date-time
+          examples:
+            - "2023-03-01T14:05:52+01:00"
         total:
           description: Number of URIs in the list.
           type: integer
@@ -831,6 +894,7 @@ components:
       type: object
       required:
         - schema_version
+        - generated_at
         - total
         - result
       properties:
@@ -839,6 +903,12 @@ components:
           type: string
           examples:
             - "1.0.0"
+        generated_at:
+          description: The time this response was generated.
+          type: string
+          format: date-time
+          examples:
+            - "2023-03-01T14:05:52+01:00"
         total:
           description: Number of products in the list.
           type: integer
@@ -856,6 +926,7 @@ components:
       type: object
       required:
         - schema_version
+        - generated_at
         - total
         - result
       properties:
@@ -864,6 +935,12 @@ components:
           type: string
           examples:
             - "1.0.0"
+        generated_at:
+          description: The time this response was generated.
+          type: string
+          format: date-time
+          examples:
+            - "2023-03-01T14:05:52+01:00"
         total:
           description: Number of products in the list.
           type: integer
@@ -881,6 +958,7 @@ components:
       type: object
       required:
         - schema_version
+        - generated_at
         - result
       properties:
         schema_version:
@@ -888,6 +966,12 @@ components:
           type: string
           examples:
             - "1.0.0"
+        generated_at:
+          description: The time this response was generated.
+          type: string
+          format: date-time
+          examples:
+            - "2023-03-01T14:05:52+01:00"
         result:
           $ref: "#/components/schemas/ProductRelease"
 
@@ -896,6 +980,7 @@ components:
       type: object
       required:
         - schema_version
+        - generated_at
         - last_modified
         - result
       properties:
@@ -904,6 +989,12 @@ components:
           type: string
           examples:
             - "1.0.0"
+        generated_at:
+          description: The time this response was generated.
+          type: string
+          format: date-time
+          examples:
+            - "2023-03-01T14:05:52+01:00"
         last_modified:
           description: The time this product was last modified.
           type: string
@@ -918,6 +1009,7 @@ components:
       type: object
       required:
         - schema_version
+        - generated_at
         - total
         - result
       properties:
@@ -926,6 +1018,12 @@ components:
           description: Version of this schema.
           examples:
             - 1.0.0
+        generated_at:
+          description: The time this response was generated.
+          type: string
+          format: date-time
+          examples:
+            - "2023-03-01T14:05:52+01:00"
         total:
           description: Number of identifiers in the list.
           type: integer
@@ -944,8 +1042,9 @@ components:
                 examples:
                   - cpe:/o:canonical:ubuntu_linux
               product:
-                $ref: "#/components/schemas/Uri"
                 description: Reference to the product this identifier is related to.
+                allOf:
+                  - $ref: "#/components/schemas/Uri"
             required:
               - identifier
               - product
