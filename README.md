@@ -6,6 +6,16 @@
   <br>
 </p>
 
+<p align="center">
+  <a href="https://github.com/veerendra2/endoflife_exporter/actions"><img src="https://github.com/veerendra2/endoflife_exporter/workflows/CI/badge.svg" alt="Build Status"></a>
+  <a href="https://goreportcard.com/report/github.com/veerendra2/endoflife_exporter"><img src="https://goreportcard.com/badge/github.com/veerendra2/endoflife_exporter" alt="Go Report Card"></a>
+  <a href="https://github.com/veerendra2/endoflife_exporter/releases"><img src="https://img.shields.io/github/v/release/veerendra2/endoflife_exporter" alt="Release"></a>
+  <a href="https://github.com/veerendra2/endoflife_exporter/blob/main/LICENSE"><img src="https://img.shields.io/github/license/veerendra2/endoflife_exporter" alt="License"></a>
+  <a href="https://github.com/veerendra2/endoflife_exporter/stargazers"><img src="https://img.shields.io/github/stars/veerendra2/endoflife_exporter" alt="Stars"></a>
+  <a href="https://github.com/veerendra2/endoflife_exporter/network/members"><img src="https://img.shields.io/github/forks/veerendra2/endoflife_exporter" alt="Forks"></a>
+  <a href="https://ghcr.io/veerendra2/endoflife_exporter"><img src="https://img.shields.io/badge/ghcr.io-amd64%20%7C%20arm64-blue?style=flat&logo=docker&logoColor=white" alt="Docker"></a>
+</p>
+
 A Prometheus exporter that exposes product versions and their End-of-Life (EOL) dates as metrics using the [endoflife.date](https://endoflife.date) API. Information is fetched only when Prometheus scrapes the `/metrics` endpoint.
 
 ## Deployment
