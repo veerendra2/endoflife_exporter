@@ -105,7 +105,7 @@ See [metrics](https://github.com/veerendra2/endoflife_exporter/wiki/Metrics)
 
 - [Download Grafana Dashboard Json](./assets/endoflife-grafana-dashboard.json)
 
-![Dashboard Screenshot](./dashboard/dashboard-screenshot.png)
+![Dashboard Screenshot](./assets/dashboard-screenshot.png)
 
 ## Development
 
