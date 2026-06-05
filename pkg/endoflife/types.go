@@ -4,15 +4,16 @@
 package endoflife
 
 import (
-	"encoding/json"
 	"time"
 
-	"github.com/oapi-codegen/runtime"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // FullProductListResponse A response containing a list of products (full).
 type FullProductListResponse struct {
+	// GeneratedAt The time this response was generated.
+	GeneratedAt time.Time `json:"generated_at"`
+
 	// Result The products.
 	Result []ProductDetails `json:"result"`
 
@@ -34,12 +35,15 @@ type Identifier struct {
 
 // IdentifierListResponse A response containing all identifiers for a given type.
 type IdentifierListResponse struct {
+	// GeneratedAt The time this response was generated.
+	GeneratedAt time.Time `json:"generated_at"`
+
 	// Result The identifiers.
 	Result []struct {
 		// Identifier The identifier.
 		Identifier string `json:"identifier"`
 
-		// Product A link to a resource.
+		// Product Reference to the product this identifier is related to.
 		Product Uri `json:"product"`
 	} `json:"result"`
 
@@ -115,6 +119,9 @@ type ProductDetails struct {
 
 // ProductListResponse A response containing a list of products (summary).
 type ProductListResponse struct {
+	// GeneratedAt The time this response was generated.
+	GeneratedAt time.Time `json:"generated_at"`
+
 	// Result The products.
 	Result []ProductSummary `json:"result"`
 
@@ -133,7 +140,7 @@ type ProductRelease struct {
 
 	// Custom Custom fields for the product release cycle.
 	// This field is null when the product does not declare at least one custom fields.
-	Custom *ProductRelease_Custom `json:"custom,omitempty"`
+	Custom *UnknownProperties `json:"custom"`
 
 	// DiscontinuedFrom Discontinuation date for the release cycle.
 	// This field is mainly used for hardware, it is not provided when not applicable. It is null when the date is not known.
@@ -178,7 +185,7 @@ type ProductRelease struct {
 
 	// Latest Latest version for this release cycle.
 	// This field is null when this release cycle does not have a latest version documented.
-	Latest ProductRelease_Latest `json:"latest"`
+	Latest *ProductVersion `json:"latest"`
 
 	// LtsFrom Start date of the LTS phase for the release cycle.
 	// This field is null when the isLts field is set to false, when the LTS phase does not start later than the release date, or when the date is not known.
@@ -191,26 +198,11 @@ type ProductRelease struct {
 	ReleaseDate openapi_types.Date `json:"releaseDate"`
 }
 
-// ProductReleaseCustom1 defines model for .
-type ProductReleaseCustom1 = interface{}
-
-// ProductRelease_Custom Custom fields for the product release cycle.
-// This field is null when the product does not declare at least one custom fields.
-type ProductRelease_Custom struct {
-	union json.RawMessage
-}
-
-// ProductReleaseLatest1 defines model for .
-type ProductReleaseLatest1 = interface{}
-
-// ProductRelease_Latest Latest version for this release cycle.
-// This field is null when this release cycle does not have a latest version documented.
-type ProductRelease_Latest struct {
-	union json.RawMessage
-}
-
 // ProductReleaseResponse A response containing a release cycle.
 type ProductReleaseResponse struct {
+	// GeneratedAt The time this response was generated.
+	GeneratedAt time.Time `json:"generated_at"`
+
 	// Result Full information about a product release cycle.
 	Result ProductRelease `json:"result"`
 
@@ -220,6 +212,9 @@ type ProductReleaseResponse struct {
 
 // ProductResponse A response containing a product.
 type ProductResponse struct {
+	// GeneratedAt The time this response was generated.
+	GeneratedAt time.Time `json:"generated_at"`
+
 	// LastModified The time this product was last modified.
 	LastModified time.Time `json:"last_modified"`
 
@@ -281,6 +276,9 @@ type Uri struct {
 
 // UriListResponse A response containing a list of URIs.
 type UriListResponse struct {
+	// GeneratedAt The time this response was generated.
+	GeneratedAt time.Time `json:"generated_at"`
+
 	// Result The URIs.
 	Result []Uri `json:"result"`
 
@@ -289,128 +287,4 @@ type UriListResponse struct {
 
 	// Total Number of URIs in the list.
 	Total int32 `json:"total"`
-}
-
-// AsUnknownProperties returns the union data inside the ProductRelease_Custom as a UnknownProperties
-func (t ProductRelease_Custom) AsUnknownProperties() (UnknownProperties, error) {
-	var body UnknownProperties
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromUnknownProperties overwrites any union data inside the ProductRelease_Custom as the provided UnknownProperties
-func (t *ProductRelease_Custom) FromUnknownProperties(v UnknownProperties) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeUnknownProperties performs a merge with any union data inside the ProductRelease_Custom, using the provided UnknownProperties
-func (t *ProductRelease_Custom) MergeUnknownProperties(v UnknownProperties) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsProductReleaseCustom1 returns the union data inside the ProductRelease_Custom as a ProductReleaseCustom1
-func (t ProductRelease_Custom) AsProductReleaseCustom1() (ProductReleaseCustom1, error) {
-	var body ProductReleaseCustom1
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromProductReleaseCustom1 overwrites any union data inside the ProductRelease_Custom as the provided ProductReleaseCustom1
-func (t *ProductRelease_Custom) FromProductReleaseCustom1(v ProductReleaseCustom1) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeProductReleaseCustom1 performs a merge with any union data inside the ProductRelease_Custom, using the provided ProductReleaseCustom1
-func (t *ProductRelease_Custom) MergeProductReleaseCustom1(v ProductReleaseCustom1) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t ProductRelease_Custom) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *ProductRelease_Custom) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsProductVersion returns the union data inside the ProductRelease_Latest as a ProductVersion
-func (t ProductRelease_Latest) AsProductVersion() (ProductVersion, error) {
-	var body ProductVersion
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromProductVersion overwrites any union data inside the ProductRelease_Latest as the provided ProductVersion
-func (t *ProductRelease_Latest) FromProductVersion(v ProductVersion) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeProductVersion performs a merge with any union data inside the ProductRelease_Latest, using the provided ProductVersion
-func (t *ProductRelease_Latest) MergeProductVersion(v ProductVersion) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsProductReleaseLatest1 returns the union data inside the ProductRelease_Latest as a ProductReleaseLatest1
-func (t ProductRelease_Latest) AsProductReleaseLatest1() (ProductReleaseLatest1, error) {
-	var body ProductReleaseLatest1
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromProductReleaseLatest1 overwrites any union data inside the ProductRelease_Latest as the provided ProductReleaseLatest1
-func (t *ProductRelease_Latest) FromProductReleaseLatest1(v ProductReleaseLatest1) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeProductReleaseLatest1 performs a merge with any union data inside the ProductRelease_Latest, using the provided ProductReleaseLatest1
-func (t *ProductRelease_Latest) MergeProductReleaseLatest1(v ProductReleaseLatest1) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t ProductRelease_Latest) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *ProductRelease_Latest) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
 }
