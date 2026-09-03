@@ -4,9 +4,9 @@ go 1.26.4
 
 require (
 	github.com/alecthomas/kong v1.16.1
-	github.com/oapi-codegen/runtime v1.6.0
+	github.com/oapi-codegen/runtime v1.7.0
 	github.com/onsi/ginkgo/v2 v2.32.1
-	github.com/onsi/gomega v1.42.1
+	github.com/onsi/gomega v1.43.0
 	github.com/prometheus/client_golang v1.24.1
 	github.com/veerendra2/gopackages v1.2.3
 	gopkg.in/yaml.v3 v3.0.1
