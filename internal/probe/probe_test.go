@@ -114,6 +114,21 @@ var _ = Describe("probe", func() {
 			"endoflife_probe_success", "endoflife_product_info")).To(Succeed())
 	})
 
+	It("dedupes cycles that resolve to the same release cycle", func() {
+		client := fakeClient{getRelease: func(_ context.Context, _, cycleName string) (endoflife.ReleaseDetails, error) {
+			if cycleName == "latest" {
+				return details("8.0"), nil
+			}
+			return details(cycleName), nil
+		}}
+
+		reg := probe(context.Background(), client, "mongo", []string{"latest", "8.0"}, false)
+
+		expected := probeSuccess("mongo", 1) + productInfoHeader + productInfo("8.0")
+		Expect(testutil.GatherAndCompare(reg, strings.NewReader(expected),
+			"endoflife_probe_success", "endoflife_product_info")).To(Succeed())
+	})
+
 	It("scrapes all cycles when all is requested", func() {
 		client := fakeClient{
 			getProductDetails: func(_ context.Context, productName string) ([]endoflife.ReleaseDetails, error) {

@@ -201,7 +201,18 @@ func probe(ctx context.Context, client endoflife.Client, product string, release
 
 	registry := prometheus.NewRegistry()
 	if len(details) > 0 {
-		registry.MustRegister(&productCollector{product: product, releases: details})
+		// "latest" is a pseudo-cycle that resolves to a real cycle name, so two
+		// requested cycles can land on the same series, which fails the scrape.
+		seen := make(map[string]struct{}, len(details))
+		unique := details[:0]
+		for _, d := range details {
+			if _, ok := seen[d.ReleaseCycleName]; ok {
+				continue
+			}
+			seen[d.ReleaseCycleName] = struct{}{}
+			unique = append(unique, d)
+		}
+		registry.MustRegister(&productCollector{product: product, releases: unique})
 	}
 	registry.MustRegister(&probeCollector{product: product, success: err == nil, duration: time.Since(start).Seconds()})
 	return registry
