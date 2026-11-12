@@ -1,6 +1,6 @@
 # This Dockerfile is only for development environment
 # Release versions use distroless images built via GoReleaser with ko
-# See .goreleaser.yml
+# See .goreleaser.yaml
 #
 FROM golang:1.27 AS app_builder
 WORKDIR /app

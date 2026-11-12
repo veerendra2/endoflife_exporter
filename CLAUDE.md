@@ -9,7 +9,7 @@ A Prometheus exporter that fetches product version End-of-Life (EOL) information
 ## Development Commands
 
 ### Prerequisites
-- Go 1.26+
+- Go 1.27+
 - [Task](https://taskfile.dev/) for build automation
 - `oapi-codegen` (installed via `task install`)
 
@@ -118,7 +118,7 @@ The `pkg/endoflife/openapi.yaml` spec is sourced from https://endoflife.date/doc
 4. Run `task gen` to regenerate `types.go`
 5. If code breaks, check `pkg/endoflife/endoflife.go` for usage of changed field types (especially pointer vs non-pointer changes)
 
-**Known upstream issue:** The API spec incorrectly defines `isEoes` as `string` in some versions, but the API returns `boolean`. This has been corrected in recent versions, but verify line 622-631 in openapi.yaml shows `type: boolean` with `nullable: true`.
+**Known upstream issue:** The API spec incorrectly defines `isEoes` as `string` in some versions, but the API returns `boolean`. This has been corrected in recent versions; verify the `isEoes` block in openapi.yaml still reads `type: boolean` with `nullable: true`.
 
 ## Testing Strategy
 

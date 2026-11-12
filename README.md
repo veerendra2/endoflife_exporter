@@ -147,7 +147,7 @@ See [metrics](https://github.com/veerendra2/endoflife_exporter/wiki/Metrics)
 
 ## Development
 
-Install [task](https://taskfile.dev/docs/installation)
+Requires Go 1.27+ and [task](https://taskfile.dev/docs/installation).
 
 ```bash
 go mod tidy
@@ -179,10 +179,5 @@ Update endoflife OpenAPI Spec
 
 - Check https://endoflife.date/docs/api/v1/ for changes.
 - Update pkg/endoflife/openapi.yaml if needed and run `task gen` again.
-- The upstream OpenAPI spec has a type mismatch: `isEoes` is defined as `string` but the API returns `boolean`
-  - **Workaround**: Before running `task gen`, manually change the type at [line 564 in openapi.yaml](./pkg/endoflife/openapi.yaml#L564):
-    ```yaml
-    isEoes:
-      type: boolean # Changed from 'string'
-      nullable: true
-    ```
+- The upstream spec is OpenAPI 3.1 but oapi-codegen needs 3.0: set `openapi: 3.0.3` and convert `type: [string, "null"]` to `type: string` + `nullable: true`.
+- Check `git diff pkg/endoflife/types.go` afterwards: a changed field type (pointer vs non-pointer) can break `pkg/endoflife/endoflife.go`.
