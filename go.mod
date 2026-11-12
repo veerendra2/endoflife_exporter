@@ -9,7 +9,6 @@ require (
 	github.com/onsi/gomega v1.44.0
 	github.com/prometheus/client_golang v1.25.0
 	github.com/veerendra2/gopackages v1.2.3
-	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -50,6 +49,7 @@ require (
 	golang.org/x/tools v0.49.0 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 tool github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen
