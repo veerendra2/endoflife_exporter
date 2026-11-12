@@ -31,7 +31,6 @@ type client struct {
 }
 
 type Client interface {
-	doRequest(ctx context.Context, requestUrl string) ([]byte, error)
 	GetProductDetails(ctx context.Context, productName string) ([]ReleaseDetails, error)
 	GetRelease(ctx context.Context, productName string, cycleName string) (ReleaseDetails, error)
 }
