@@ -3,9 +3,9 @@ module github.com/veerendra2/endoflife_exporter
 go 1.26.4
 
 require (
-	github.com/alecthomas/kong v1.16.1
+	github.com/alecthomas/kong v1.17.0
 	github.com/oapi-codegen/runtime v1.8.0
-	github.com/onsi/ginkgo/v2 v2.33.1
+	github.com/onsi/ginkgo/v2 v2.34.0
 	github.com/onsi/gomega v1.44.0
 	github.com/prometheus/client_golang v1.25.0
 	github.com/veerendra2/gopackages v1.2.3
