@@ -71,10 +71,7 @@ services:
         condition: service_started
     environment:
       ADDRESS: ":8080"
-      CONFIG_FILE: "/config.yml"
       LOG_FORMAT: "console"
-    volumes:
-      - ./sample.config.yml:/config.yml
     networks:
       - monitoring
     ports:
@@ -122,8 +119,28 @@ configs:
         scrape_interval: 15s
         evaluation_interval: 15s
       scrape_configs:
-        - job_name: "endoflifeexporter"
-          scrape_interval: 2m
-          scrape_timeout: 1m
+        - job_name: "endoflifeexporter" # The exporter itself
           static_configs:
             - targets: ["endoflifeexporter:8080"]
+
+        - job_name: "endoflife_products" # One scrape per product
+          metrics_path: /probe
+          scrape_interval: 168h
+          scrape_timeout: 30s
+          static_configs:
+            - targets: ["mongo"]
+              labels:
+                releases: "8.0,7.0"
+            - targets: ["redis"]
+            - targets: ["ubuntu"]
+              labels:
+                releases: "all"
+          relabel_configs:
+            - source_labels: [__address__]
+              target_label: __param_target
+            - source_labels: [__param_target]
+              target_label: instance
+            - source_labels: [releases]
+              target_label: __param_releases
+            - target_label: __address__
+              replacement: endoflifeexporter:8080

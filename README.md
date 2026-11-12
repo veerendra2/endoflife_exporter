@@ -16,7 +16,9 @@
   <a href="https://ghcr.io/veerendra2/endoflife_exporter"><img src="https://img.shields.io/badge/ghcr.io-amd64%20%7C%20arm64-blue?style=flat&logo=docker&logoColor=white" alt="Docker"></a>
 </p>
 
-A Prometheus exporter that exposes product versions and their End-of-Life (EOL) dates as metrics using the [endoflife.date](https://endoflife.date) API. Information is fetched only when Prometheus scrapes the `/metrics` endpoint.
+A Prometheus exporter that exposes product versions and their End-of-Life (EOL) dates as metrics using the [endoflife.date](https://endoflife.date) API. It follows the [multi-target exporter pattern](https://prometheus.io/docs/guides/multi-target-exporter/): Prometheus names the products to check, and the exporter fetches them on demand when Prometheus scrapes `/probe`.
+
+> **Breaking change:** the `products:` list in `config.yml` is gone. Products and their release cycles now live in `prometheus.yml` — see [Probing](#probing).
 
 ## Deployment
 
@@ -30,7 +32,6 @@ Prometheus exporter for product versions and their End-of-Life.
 Flags:
   -h, --help                    Show context-sensitive help.
       --address=":8080"         The address where the server should listen on ($ADDRESS).
-      --config="config.yml"     Configuration file path ($CONFIG_FILE)
       --log.format="console"    Set the output format of the logs. Must be "console" or "json" ($LOG_FORMAT).
       --log.level=INFO          Set the log level. Must be "DEBUG", "INFO", "WARN" or "ERROR" ($LOG_LEVEL).
       --log.add-source          Whether to add source file and line number to log records ($LOG_ADD_SOURCE).
@@ -48,10 +49,7 @@ services:
     restart: unless-stopped
     environment:
       ADDRESS: ":8080"
-      CONFIG_FILE: "/config.yml"
       LOG_FORMAT: "console"
-    volumes:
-      - ./config.yml:/config.yml
     ports:
       - 8080:8080
 ```
@@ -60,37 +58,60 @@ services:
 docker compose up -d
 ```
 
-## Configuration
+## Probing
 
-Configure products and their release cycles as shown below.
+The exporter probes one product per request. Prometheus names the product, so adding a product needs no exporter restart.
 
-> 💡 Always verify product names on [endoflife.date](https://endoflife.date/). If you don't specify a release, it defaults to the `latest` available one.
+| Parameter  | Required | Description                                                                                      |
+| ---------- | -------- | ------------------------------------------------------------------------------------------------ |
+| `target`   | yes      | Product slug from [endoflife.date](https://endoflife.date/), e.g. `mongo`.                        |
+| `releases` | no       | Comma-separated release cycles (`8.0,7.0`), or `all` for every cycle. Defaults to `latest`.        |
 
-```yaml
----
-products:
-  - name: mongo
-    releases:
-      - "8.0"
-      - "7.0"
-  - name: redis
-  - name: ubuntu
-    all_releases: true
+> 💡 Always verify product and cycle names on [endoflife.date](https://endoflife.date/).
+
+```bash
+curl 'localhost:8080/probe?target=redis'
+curl 'localhost:8080/probe?target=mongo&releases=8.0,7.0'
+curl 'localhost:8080/probe?target=ubuntu&releases=all'
 ```
+
+A probe that cannot reach endoflife.date still answers `200`, with `endoflife_probe_success 0`. Only a bad request (missing `target`, invalid characters, malformed `releases`) returns `400`.
 
 ## Prometheus Configuration
 
-Below is an example scrape configuration for Prometheus.
+Below is an example scrape configuration for Prometheus. The first job scrapes the exporter's own metrics; the second probes the products and sets `instance` to the product name.
 
 ```yaml
 ---
 scrape_configs:
-  - job_name: "endoflife_exporter"
-    scrape_interval: 168h # Every week
-    scrape_timeout: 2m # If you have a long list of products, you might want to increase the timeout.
+  - job_name: "endoflife_exporter" # The exporter itself
     static_configs:
       - targets: ["endoflife_exporter:8080"]
+
+  - job_name: "endoflife_products" # One scrape per product
+    metrics_path: /probe
+    scrape_interval: 168h # Every week
+    scrape_timeout: 30s
+    static_configs:
+      - targets: ["mongo"] # Product slug from endoflife.date
+        labels:
+          releases: "8.0,7.0"
+      - targets: ["redis"] # Defaults to latest
+      - targets: ["ubuntu"]
+        labels:
+          releases: "all"
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [releases]
+        target_label: __param_releases
+      - target_label: __address__
+        replacement: endoflife_exporter:8080
 ```
+
+The relabeling turns each `targets` entry into a probe request: the target becomes the `target` parameter and the `instance` label, an optional `releases` label becomes the `releases` parameter, and the request itself goes to the exporter. `up` is then per product, not per exporter.
 
 ### Alerting Rules Example
 
@@ -108,6 +129,13 @@ groups:
 ```
 
 ## Metrics
+
+- `endoflife_product_info` — release cycle metadata (EOL/LTS/maintained flags, latest version)
+- `endoflife_latest_version_timestamp_seconds` — release date of the latest patch version
+- `endoflife_release_cycle_timestamp_seconds` — when the release cycle first launched
+- `endoflife_eol_from_timestamp_seconds` — when support ends (2050-01-01 when the API reports no EOL date)
+- `endoflife_probe_success` — whether the probe reached endoflife.date for this product
+- `endoflife_probe_duration_seconds` — how long the probe took
 
 See [metrics](https://github.com/veerendra2/endoflife_exporter/wiki/Metrics)
 

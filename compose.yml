@@ -9,9 +9,6 @@ services:
       - com.centurylinklabs.watchtower.enable=true
     environment:
       ADDRESS: ":8080"
-      CONFIG_FILE: "/config.yml"
       LOG_FORMAT: "console"
-    volumes:
-      - ./config.yml:/config.yml
     ports:
       - 8080:8080
