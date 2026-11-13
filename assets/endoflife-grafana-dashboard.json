@@ -982,7 +982,7 @@
               "instant": true,
               "range": false,
               "refId": "A",
-              "expr": "sort(abs((endoflife_eol_from_timestamp_seconds{product_name=~\"$product\"} - time()) / 86400) and on (product_name, release_cycle_name) endoflife_product_info{product_name=~\"$product\", is_eol=\"true\"})"
+              "expr": "sort(endoflife_product_info{product_name=~\"$product\", is_eol=\"true\"} * on (product_name, release_cycle_name) group_left () abs((endoflife_eol_from_timestamp_seconds{product_name=~\"$product\"} - time()) / 86400))"
             }
           ],
           "title": "End-of-life cycles",

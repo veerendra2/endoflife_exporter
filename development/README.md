@@ -14,7 +14,8 @@ docker compose up -d --build
 | http://localhost:9091 | Prometheus                        |
 | http://localhost:3001 | Grafana (`admin`/`admin`)         |
 
-Grafana opens with anonymous admin access, so no login is needed.
+Grafana opens with anonymous admin access, so no login is needed. Because of that, every
+port is published on `127.0.0.1` only — the stack is not reachable from your network.
 
 ## What is scraped
 
@@ -33,6 +34,10 @@ in long-dead releases, so the counters get large):
         labels:
           releases: "17,16"
 ```
+
+Give each product exactly one target. The dashboard joins metrics on
+`(product_name, release_cycle_name)`, so scraping the same product from two targets makes
+the tables fail with `duplicate series`.
 
 The dev config scrapes every 30s so the dashboard fills immediately. Real deployments
 should use something like `168h`: end-of-life data changes rarely.
