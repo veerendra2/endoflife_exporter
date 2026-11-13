@@ -131,8 +131,6 @@ groups:
 - `endoflife_probe_success` — whether the probe reached endoflife.date for this product
 - `endoflife_probe_duration_seconds` — how long the probe took
 
-See [metrics](https://github.com/veerendra2/endoflife_exporter/wiki/Metrics)
-
 ## Grafana Dashboard
 
 [Download the dashboard JSON](./assets/endoflife-grafana-dashboard.json), or use the one provisioned in `development/`. Cycles with no published EOL date show as `not published`.
