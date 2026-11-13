@@ -57,8 +57,8 @@ docker compose up -d
 
 ## Probing
 
-One product per request. The product comes from the query string, so the exporter holds no
-product list of its own — nothing to keep in sync with `prometheus.yml`.
+One product per request. Add a product and its releases to Prometheus's static config, and
+Prometheus scrapes them through this exporter.
 
 | Parameter  | Required | Description                                                                                      |
 | ---------- | -------- | ------------------------------------------------------------------------------------------------ |
