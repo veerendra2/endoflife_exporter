@@ -86,7 +86,7 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 5,
+        "w": 4,
         "x": 0,
         "y": 1
       },
@@ -151,7 +151,7 @@
       "gridPos": {
         "h": 4,
         "w": 4,
-        "x": 5,
+        "x": 4,
         "y": 1
       },
       "id": 2,
@@ -220,7 +220,7 @@
       "gridPos": {
         "h": 4,
         "w": 5,
-        "x": 9,
+        "x": 8,
         "y": 1
       },
       "id": 3,
@@ -289,7 +289,7 @@
       "gridPos": {
         "h": 4,
         "w": 5,
-        "x": 14,
+        "x": 13,
         "y": 1
       },
       "id": 4,
@@ -331,7 +331,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "The soonest end-of-support date still ahead of us.",
+      "description": "The soonest end-of-support date still ahead of us, and the cycle it belongs to.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -347,14 +347,15 @@
             ]
           },
           "unit": "dateTimeAsIso",
-          "noValue": "all EOL"
+          "noValue": "all EOL",
+          "displayName": "${__field.labels.product_name} ${__field.labels.release_cycle_name}"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 4,
-        "w": 5,
-        "x": 19,
+        "w": 6,
+        "x": 18,
         "y": 1
       },
       "id": 5,
@@ -370,8 +371,8 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto",
-        "wideLayout": true
+        "textMode": "value_and_name",
+        "wideLayout": false
       },
       "pluginVersion": "12.0.2",
       "targets": [
@@ -381,15 +382,16 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "min(endoflife_eol_from_timestamp_seconds{product_name=~\"$product\"} > time()) * 1000",
+          "expr": "bottomk(1, endoflife_eol_from_timestamp_seconds{product_name=~\"$product\"} > time()) * 1000",
           "instant": true,
           "range": false,
           "refId": "A",
-          "format": "table"
+          "format": "time_series"
         }
       ],
       "title": "Next EOL date",
-      "type": "stat"
+      "type": "stat",
+      "timezone": "utc"
     },
     {
       "collapsed": false,
