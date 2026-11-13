@@ -347,7 +347,7 @@
             ]
           },
           "unit": "dateTimeAsIso",
-          "noValue": "all EOL",
+          "noValue": "no EOL date ahead",
           "displayName": "${__field.labels.product_name} ${__field.labels.release_cycle_name}"
         },
         "overrides": []
@@ -897,6 +897,21 @@
                     }
                   ]
                 }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null+nan",
+                      "result": {
+                        "text": "not published",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
               }
             ]
           },
@@ -1045,7 +1060,7 @@
           "instant": true,
           "range": false,
           "refId": "A",
-          "expr": "sort(endoflife_product_info{product_name=~\"$product\", is_eol=\"true\"} * on (product_name, release_cycle_name) group_left () abs((endoflife_eol_from_timestamp_seconds{product_name=~\"$product\"} - time()) / 86400))"
+          "expr": "sort((endoflife_product_info{product_name=~\"$product\", is_eol=\"true\"} * on (product_name, release_cycle_name) group_left () abs((endoflife_eol_from_timestamp_seconds{product_name=~\"$product\"} - time()) / 86400)) or (endoflife_product_info{product_name=~\"$product\", is_eol=\"true\"} unless on (product_name, release_cycle_name) endoflife_eol_from_timestamp_seconds{product_name=~\"$product\"}) * (0/0))"
         }
       ],
       "title": "End-of-life cycles",

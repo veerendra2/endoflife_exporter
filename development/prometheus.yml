@@ -10,7 +10,7 @@ scrape_configs:
 
   # One scrape per product (/probe). The target is the endoflife.date slug;
   # an optional "releases" label selects cycles, otherwise it defaults to latest.
-  # 30s is a development value: real deployments should use hours, e.g. 168h.
+  # 30s is a development value. Keep the real one under the 5m instant-query lookback.
   - job_name: endoflife_products
     metrics_path: /probe
     scrape_interval: 30s

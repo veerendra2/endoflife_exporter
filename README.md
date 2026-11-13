@@ -86,7 +86,7 @@ scrape_configs:
 
   - job_name: "endoflife_products" # One scrape per product
     metrics_path: /probe
-    scrape_interval: 168h # Every week
+    scrape_interval: 1m # must stay under Prometheus's 5m instant-query lookback
     scrape_timeout: 30s
     static_configs:
       - targets: ["mongo"] # Product slug from endoflife.date

@@ -39,8 +39,10 @@ Give each product exactly one target. The dashboard joins metrics on
 `(product_name, release_cycle_name)`, so scraping the same product from two targets makes
 the tables fail with `duplicate series`.
 
-The dev config scrapes every 30s so the dashboard fills immediately. Real deployments
-should use something like `168h`: end-of-life data changes rarely.
+The dev config scrapes every 30s so the dashboard fills immediately. End-of-life data
+changes rarely, but keep the production interval under a minute or two: the dashboard uses
+instant queries, which only see samples newer than Prometheus's `--query.lookback-delta`
+(5 minutes by default).
 
 ## Probe the exporter directly
 
