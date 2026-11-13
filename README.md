@@ -18,8 +18,6 @@
 
 A Prometheus exporter that exposes product versions and their End-of-Life (EOL) dates as metrics using the [endoflife.date](https://endoflife.date) API. It follows the [multi-target exporter pattern](https://prometheus.io/docs/guides/multi-target-exporter/): Prometheus names the products to check, and the exporter fetches them on demand when Prometheus scrapes `/probe`.
 
-> **Breaking change:** the `products:` list in `config.yml` is gone. Products and their release cycles now live in `prometheus.yml` — see [Probing](#probing).
-
 ## Deployment
 
 ### Usage
@@ -60,14 +58,12 @@ docker compose up -d
 
 ## Probing
 
-The exporter probes one product per request. Prometheus names the product, so adding a product needs no exporter restart.
+One product per request. Adding a product is a `prometheus.yml` edit, no restart.
 
 | Parameter  | Required | Description                                                                                      |
 | ---------- | -------- | ------------------------------------------------------------------------------------------------ |
 | `target`   | yes      | Product slug from [endoflife.date](https://endoflife.date/), e.g. `mongo`.                        |
 | `releases` | no       | Comma-separated release cycles (`8.0,7.0`), or `all` for every cycle. Defaults to `latest`.        |
-
-> 💡 Always verify product and cycle names on [endoflife.date](https://endoflife.date/).
 
 ```bash
 curl 'localhost:8080/probe?target=redis'
@@ -75,11 +71,11 @@ curl 'localhost:8080/probe?target=mongo&releases=8.0,7.0'
 curl 'localhost:8080/probe?target=ubuntu&releases=all'
 ```
 
-A probe that cannot reach endoflife.date still answers `200`, with `endoflife_probe_success 0`. Only a bad request (missing `target`, invalid characters, malformed `releases`) returns `400`.
+A failed probe still answers `200` with `endoflife_probe_success 0`; a bad request returns `400`.
 
 ## Prometheus Configuration
 
-Below is an example scrape configuration for Prometheus. The first job scrapes the exporter's own metrics; the second probes the products and sets `instance` to the product name.
+Example `prometheus.yml`:
 
 ```yaml
 ---
@@ -111,8 +107,6 @@ scrape_configs:
         replacement: endoflife_exporter:8080
 ```
 
-The relabeling turns each `targets` entry into a probe request: the target becomes the `target` parameter and the `instance` label, an optional `releases` label becomes the `releases` parameter, and the request itself goes to the exporter. `up` is then per product, not per exporter.
-
 ### Alerting Rules Example
 
 ```yaml
@@ -133,8 +127,7 @@ groups:
 - `endoflife_product_info` — release cycle metadata (EOL/LTS/maintained flags, latest version)
 - `endoflife_latest_version_timestamp_seconds` — release date of the latest patch version
 - `endoflife_release_cycle_timestamp_seconds` — when the release cycle first launched
-- `endoflife_eol_from_timestamp_seconds` — when support ends. Absent for a cycle where endoflife.date
-  publishes no EOL date, so `absent()` tells you the exporter does not know
+- `endoflife_eol_from_timestamp_seconds` — when support ends. Absent when endoflife.date has no EOL date
 - `endoflife_probe_success` — whether the probe reached endoflife.date for this product
 - `endoflife_probe_duration_seconds` — how long the probe took
 
@@ -142,14 +135,7 @@ See [metrics](https://github.com/veerendra2/endoflife_exporter/wiki/Metrics)
 
 ## Grafana Dashboard
 
-- [Download Grafana Dashboard Json](./assets/endoflife-grafana-dashboard.json)
-
-Counters on top (products, release cycles, how many are already EOL or end within 90
-days, and the next EOL date with the cycle it belongs to), then the release cycles that are
-still supported, ordered by how soon support ends, with a bar gauge of the days left.
-Retired cycles follow, with how long ago they reached EOL, and the probe health charts sit
-in a collapsed row at the bottom. A cycle where endoflife.date publishes no EOL date is
-listed as `not published` rather than given a guessed date.
+[Download the dashboard JSON](./assets/endoflife-grafana-dashboard.json), or use the one provisioned in `development/`. Cycles with no published EOL date show as `not published`.
 
 ![Dashboard Screenshot](./assets/dashboard-screenshot.png)
 
@@ -169,31 +155,14 @@ wired up.
 
 ```bash
 go mod tidy
-
-# Install dependencies
-task gen
-
-# Run tests
+task gen     # regenerate types from the OpenAPI spec
 task test
-
-# List all tasks
-task --list
-task: Available tasks for this project:
-* all:                   Run comprehensive checks: format, lint, security and test
-* build:                 Build the application binary for the current platform
-* build-docker:          Build Docker image
-* build-platforms:       Build the application binaries for multiple platforms and architectures
-* fmt:                   Formats all Go source files
-* gen:                   Generates Go types from OAPI spec      (aliases: generate)
-* install:               Install required tools and dependencies
-* lint:                  Run static analysis and code linting using golangci-lint
-* run:                   Runs the main application
-* security:              Run security vulnerability scan
-* test:                  Runs all tests in the project      (aliases: tests)
-* vet:                   Examines Go source code and reports suspicious constructs
+task all     # fmt, lint, security, tests
 ```
 
-Update endoflife OpenAPI Spec
+`task --list` shows everything else.
+
+### Update the OpenAPI spec
 
 - Check https://endoflife.date/docs/api/v1/ for changes.
 - Update pkg/endoflife/openapi.yaml if needed and run `task gen` again.
