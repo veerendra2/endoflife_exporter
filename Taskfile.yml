@@ -33,7 +33,6 @@ tasks:
       LOG_FORMAT: console
       #LOG_ADD_SOURCE: false
       LOG_LEVEL: info
-      CONFIG_FILE: ./sample.config.yml
 
   lint:
     desc: "Run static analysis and code linting using golangci-lint"
@@ -68,7 +67,7 @@ tasks:
     deps:
       - install
     cmds:
-      - oapi-codegen -generate types -package endoflife -o pkg/endoflife/types.go pkg/endoflife/openapi.yaml
+      - go tool oapi-codegen -generate types -package endoflife -o pkg/endoflife/types.go pkg/endoflife/openapi.yaml
 
   build:
     desc: "Build the application binary for the current platform"

@@ -1,0 +1,10 @@
+---
+apiVersion: 1
+
+providers:
+  - name: endoflife
+    orgId: 1
+    folder: End of Life
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards

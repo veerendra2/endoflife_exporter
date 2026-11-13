@@ -12,10 +12,9 @@ import (
 	"time"
 
 	"github.com/alecthomas/kong"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/veerendra2/endoflife_exporter/internal/collector"
-	"github.com/veerendra2/endoflife_exporter/internal/config"
+	"github.com/veerendra2/endoflife_exporter/internal/probe"
+	"github.com/veerendra2/endoflife_exporter/pkg/endoflife"
 	"github.com/veerendra2/gopackages/slogger"
 	"github.com/veerendra2/gopackages/version"
 )
@@ -24,7 +23,6 @@ const appName = "endoflife_exporter"
 
 var cli struct {
 	Address string           `env:"ADDRESS" default:":8080" help:"The address where the server should listen on."`
-	Config  string           `env:"CONFIG_FILE" default:"config.yml" help:"Configuration file path"`
 	Log     slogger.Config   `embed:"" prefix:"log." envprefix:"LOG_"`
 	Version kong.VersionFlag `name:"version" help:"Print version information and exit"`
 }
@@ -48,33 +46,27 @@ func main() {
 	slog.Info("Version information", version.Info()...)
 	slog.Info("Build context", version.BuildContext()...)
 
-	slog.Info("Loading configuration", "file", cli.Config)
-	cfg, err := config.LoadConfig(cli.Config)
+	eolClient, err := endoflife.NewClient()
 	if err != nil {
-		slog.Error("Failed to load configuration", "error", err)
+		slog.Error("Failed to create endoflife.date client", "error", err)
 		os.Exit(1)
 	}
 
-	exporter, err := collector.NewExporter(*cfg)
-	if err != nil {
-		slog.Error("Failed to create exporter", "error", err)
-		os.Exit(1)
-	}
-
-	prometheus.MustRegister(exporter)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if _, err = w.Write([]byte("<body>Metrics are available at <a href=\"/metrics\">/metrics</a></body>")); err != nil {
+		if _, err = w.Write([]byte("<body>Probing is available at /probe?target=&lt;product&gt;, metrics at <a href=\"/metrics\">/metrics</a></body>")); err != nil {
 			slog.Warn("Failed to write", "error", err)
 		}
 	})
+	http.Handle("/probe", probe.Handler(eolClient))
 	http.Handle("/metrics", promhttp.Handler())
 
 	server := &http.Server{
 		Addr:              cli.Address,
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,
-		WriteTimeout:      10 * time.Second,
-		IdleTimeout:       30 * time.Second,
+		// Must exceed the probe's 10s timeout, or the result never reaches Prometheus.
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  30 * time.Second,
 	}
 
 	go func() {

@@ -15,7 +15,7 @@ import (
 const EndOfLifeBaseURL = "https://endoflife.date/api/v1"
 
 type ReleaseDetails struct {
-	EOLFrom           time.Time
+	EOLFrom           *time.Time // nil when the API reports no end-of-life date
 	IsEol             bool
 	IsLts             bool
 	IsMaintained      bool
@@ -31,7 +31,6 @@ type client struct {
 }
 
 type Client interface {
-	doRequest(ctx context.Context, requestUrl string) ([]byte, error)
 	GetProductDetails(ctx context.Context, productName string) ([]ReleaseDetails, error)
 	GetRelease(ctx context.Context, productName string, cycleName string) (ReleaseDetails, error)
 }
@@ -117,8 +116,8 @@ func (c *client) GetProductDetails(ctx context.Context, productName string) ([]R
 // getReleaseDetails converts a ProductRelease from the API response into a ReleaseDetails struct.
 func getReleaseDetails(productRelease ProductRelease) ReleaseDetails {
 	latestVersion := "N/A"
-	latestVersionDate := time.Unix(2524608000, 0) // Default is 2050-01-01 (same as EOL default)
-	eolFrom := time.Unix(2524608000, 0)           // Default is 2050-01-01
+	latestVersionDate := time.Unix(2524608000, 0) // Default is 2050-01-01
+	var eolFrom *time.Time
 	releaseCycleDate := time.Unix(0, 0)
 
 	if productRelease.Latest != nil {
@@ -132,7 +131,7 @@ func getReleaseDetails(productRelease ProductRelease) ReleaseDetails {
 
 	if productRelease.EolFrom != nil {
 		if parsedDate, err := time.Parse("2006-01-02", productRelease.EolFrom.String()); err == nil {
-			eolFrom = parsedDate
+			eolFrom = &parsedDate
 		}
 	}
 
