@@ -1,0 +1,34 @@
+---
+global:
+  scrape_interval: 30s
+
+scrape_configs:
+  # The exporter's own metrics (/metrics).
+  - job_name: endoflife_exporter
+    static_configs:
+      - targets: ["endoflife-exporter:8080"]
+
+  # One scrape per product (/probe). The target is the endoflife.date slug;
+  # an optional "releases" label selects cycles, otherwise it defaults to latest.
+  # 30s is a development value: real deployments should use hours, e.g. 168h.
+  - job_name: endoflife_products
+    metrics_path: /probe
+    scrape_interval: 30s
+    scrape_timeout: 15s
+    static_configs:
+      - targets: ["mongo"]
+        labels:
+          releases: "8.0,7.0"
+      - targets: ["redis"]
+      - targets: ["ubuntu"]
+        labels:
+          releases: "all"
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [releases]
+        target_label: __param_releases
+      - target_label: __address__
+        replacement: endoflife-exporter:8080

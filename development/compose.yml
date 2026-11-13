@@ -1,0 +1,65 @@
+---
+name: endoflife-exporter
+
+services:
+  endoflife-exporter:
+    build:
+      context: ..
+    hostname: endoflife-exporter
+    container_name: endoflife-exporter
+    restart: unless-stopped
+    environment:
+      LOG_LEVEL: debug
+    ports:
+      - "8081:8080"
+    networks:
+      - monitoring
+
+  prometheus:
+    image: prom/prometheus:latest
+    hostname: prometheus
+    container_name: endoflife-prometheus
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=7d
+    volumes:
+      - prometheus_data:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9091:9090"
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    hostname: grafana
+    container_name: endoflife-grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ../assets/endoflife-grafana-dashboard.json:/var/lib/grafana/dashboards/endoflife.json
+      - ./dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
+      - ./datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+    ports:
+      - "3001:3000"
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    name: endoflife_monitoring
+
+volumes:
+  prometheus_data:
+    name: endoflife_prometheus_data
+  grafana_data:
+    name: endoflife_grafana_data
