@@ -24,7 +24,9 @@ Grafana opens with anonymous admin access, so no login is needed.
 - `endoflife_products` — one `/probe` scrape per product. The target is the
   endoflife.date slug; the optional `releases` label picks the release cycles.
 
-Add products by appending to `static_configs`:
+Add products by appending to `static_configs`. The `releases` label takes a
+comma-separated list of cycles, or `all` for every cycle the product ever had (which pulls
+in long-dead releases, so the counters get large):
 
 ```yaml
       - targets: ["postgres"]
