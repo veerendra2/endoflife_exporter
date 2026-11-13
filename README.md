@@ -144,9 +144,9 @@ See [metrics](https://github.com/veerendra2/endoflife_exporter/wiki/Metrics)
 - [Download Grafana Dashboard Json](./assets/endoflife-grafana-dashboard.json)
 
 Counters on top (products, release cycles, how many are already EOL or end within 90
-days, failing probes, slowest probe), then a table of every scraped release cycle with
-its latest version and days until EOL, a bar gauge of the same urgency, a timeline of
-release and EOL dates, and the probe health charts.
+days, the next EOL date), then the release cycles that are still supported, ordered by how
+soon support ends, with a bar gauge of the days left. Retired cycles are in a collapsed
+row below, and the probe health charts are at the bottom.
 
 ![Dashboard Screenshot](./assets/dashboard-screenshot.png)
 
