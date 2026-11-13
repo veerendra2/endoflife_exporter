@@ -236,6 +236,22 @@ var _ = Describe("Handler", func() {
 		Expect(rec.Code).To(Equal(http.StatusBadRequest))
 	})
 
+	It("rejects a query string it cannot parse", func() {
+		client := fakeClient{
+			getRelease: func(context.Context, string, string) (endoflife.ReleaseDetails, error) {
+				Fail("client must not be called for a malformed query string")
+				return endoflife.ReleaseDetails{}, nil
+			},
+		}
+
+		// Semicolon is not a separator: URL.Query() drops `releases` and the probe
+		// would answer for `latest` instead of reporting the bad request.
+		rec := httptest.NewRecorder()
+		Handler(client).ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/probe?target=redis&releases=8.0;7.0", nil))
+
+		Expect(rec.Code).To(Equal(http.StatusBadRequest))
+	})
+
 	It("serves the probe metrics", func() {
 		client := fakeClient{getRelease: func(_ context.Context, _, cycleName string) (endoflife.ReleaseDetails, error) {
 			return details(cycleName), nil

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -254,7 +255,13 @@ func fetch(ctx context.Context, client endoflife.Client, product string, release
 // endoflife_probe_success reports the outcome (blackbox convention).
 func Handler(client endoflife.Client) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		target := strings.TrimSpace(r.URL.Query().Get("target"))
+		query, err := url.ParseQuery(r.URL.RawQuery)
+		if err != nil {
+			http.Error(w, "malformed query string", http.StatusBadRequest)
+			return
+		}
+
+		target := strings.TrimSpace(query.Get("target"))
 		if target == "" {
 			http.Error(w, "missing target parameter", http.StatusBadRequest)
 			return
@@ -264,7 +271,7 @@ func Handler(client endoflife.Client) http.Handler {
 			return
 		}
 
-		releases, all, err := parseReleases(r.URL.Query().Get("releases"))
+		releases, all, err := parseReleases(query.Get("releases"))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
