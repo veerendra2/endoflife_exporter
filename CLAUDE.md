@@ -54,6 +54,16 @@ ADDRESS=:9090 LOG_LEVEL=debug task run
 - Exporter's own metrics: http://localhost:8080/metrics
 - Probe a product: http://localhost:8080/probe?target=redis
 
+Full stack (exporter + Prometheus + Grafana with the dashboard provisioned):
+
+```bash
+cd development && docker compose up -d --build   # exporter :8081, prometheus :9091, grafana :3001
+```
+
+`development/prometheus.yml` shows the multi-target relabeling. Provisioned dashboards are
+not hot-reloaded: `docker compose restart grafana` after editing
+`assets/endoflife-grafana-dashboard.json`.
+
 ## Architecture
 
 ### Request Flow

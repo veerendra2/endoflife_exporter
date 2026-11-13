@@ -143,11 +143,26 @@ See [metrics](https://github.com/veerendra2/endoflife_exporter/wiki/Metrics)
 
 - [Download Grafana Dashboard Json](./assets/endoflife-grafana-dashboard.json)
 
+Counters on top (products, release cycles, how many are already EOL or end within 90
+days, failing probes, slowest probe), then a table of every scraped release cycle with
+its latest version and days until EOL, a bar gauge of the same urgency, a timeline of
+release and EOL dates, and the probe health charts.
+
 ![Dashboard Screenshot](./assets/dashboard-screenshot.png)
 
 ## Development
 
 Requires Go 1.27+ and [task](https://taskfile.dev/docs/installation).
+
+For the whole stack (exporter + Prometheus + Grafana with the dashboard provisioned):
+
+```bash
+cd development
+docker compose up -d --build
+```
+
+See [development/README.md](./development/README.md) for ports and how the probes are
+wired up.
 
 ```bash
 go mod tidy
