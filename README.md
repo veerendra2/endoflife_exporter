@@ -133,7 +133,8 @@ groups:
 - `endoflife_product_info` — release cycle metadata (EOL/LTS/maintained flags, latest version)
 - `endoflife_latest_version_timestamp_seconds` — release date of the latest patch version
 - `endoflife_release_cycle_timestamp_seconds` — when the release cycle first launched
-- `endoflife_eol_from_timestamp_seconds` — when support ends (2050-01-01 when the API reports no EOL date)
+- `endoflife_eol_from_timestamp_seconds` — when support ends. Absent for a cycle where endoflife.date
+  publishes no EOL date, so `absent()` tells you the exporter does not know
 - `endoflife_probe_success` — whether the probe reached endoflife.date for this product
 - `endoflife_probe_duration_seconds` — how long the probe took
 
@@ -147,7 +148,8 @@ Counters on top (products, release cycles, how many are already EOL or end withi
 days, and the next EOL date with the cycle it belongs to), then the release cycles that are
 still supported, ordered by how soon support ends, with a bar gauge of the days left.
 Retired cycles follow, with how long ago they reached EOL, and the probe health charts sit
-in a collapsed row at the bottom.
+in a collapsed row at the bottom. A cycle where endoflife.date publishes no EOL date is
+listed as `not published` rather than given a guessed date.
 
 ![Dashboard Screenshot](./assets/dashboard-screenshot.png)
 

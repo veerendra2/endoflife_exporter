@@ -163,13 +163,17 @@ func (c *productCollector) Collect(ch chan<- prometheus.Metric) {
 			relInfo.ReleaseCycleName,
 		)
 
-		ch <- prometheus.MustNewConstMetric(
-			EndOfLifeEolFromTimestampSecondsDesc,
-			prometheus.GaugeValue,
-			float64(relInfo.EOLFrom.Unix()),
-			c.product,
-			relInfo.ReleaseCycleName,
-		)
+		// A cycle without a published end-of-life date gets no metric, rather
+		// than a placeholder date nobody can tell apart from a real one.
+		if relInfo.EOLFrom != nil {
+			ch <- prometheus.MustNewConstMetric(
+				EndOfLifeEolFromTimestampSecondsDesc,
+				prometheus.GaugeValue,
+				float64(relInfo.EOLFrom.Unix()),
+				c.product,
+				relInfo.ReleaseCycleName,
+			)
+		}
 	}
 }
 

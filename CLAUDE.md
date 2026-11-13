@@ -94,7 +94,8 @@ A failed API call is not an HTTP error: the response is `200` with `endoflife_pr
 - HTTP client for endoflife.date API
 - Two endpoints: `/products/{name}` (all releases), `/products/{name}/releases/{cycle}` (single release)
 - Converts API-generated types to internal `ReleaseDetails`
-- Default EOL date: 2050-01-01 (Unix: 2524608000) when API returns null
+- `ReleaseDetails.EOLFrom` is a `*time.Time`: nil when the API reports no EOL date. Never substitute a
+  placeholder date — a fake 2050-01-01 is indistinguishable from a real one downstream
 - `Client` is an interface so tests can fake it; keep it free of unexported methods
 
 **`pkg/endoflife/types.go`**
@@ -143,7 +144,7 @@ All metrics use Unix timestamps (seconds since epoch).
 1. **`endoflife_product_info`** (gauge=1): Metadata labels (is_eol, is_lts, is_maintained, latest_version, product_name, release_cycle_name)
 2. **`endoflife_latest_version_timestamp_seconds`**: When the latest patch version was released
 3. **`endoflife_release_cycle_timestamp_seconds`**: When the release cycle first launched
-4. **`endoflife_eol_from_timestamp_seconds`**: When support ends (2050-01-01 if no EOL date)
+4. **`endoflife_eol_from_timestamp_seconds`**: When support ends. Not emitted when the API publishes no EOL date
 5. **`endoflife_probe_success`**: 1 when the probe reached endoflife.date, 0 otherwise
 6. **`endoflife_probe_duration_seconds`**: How long the probe took
 

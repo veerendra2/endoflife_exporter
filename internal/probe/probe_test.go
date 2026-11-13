@@ -59,9 +59,11 @@ func (f fakeClient) GetRelease(ctx context.Context, productName, cycleName strin
 	return f.getRelease(ctx, productName, cycleName)
 }
 
+func timePtr(t time.Time) *time.Time { return &t }
+
 func details(cycle string) endoflife.ReleaseDetails {
 	return endoflife.ReleaseDetails{
-		EOLFrom:           time.Unix(2524608000, 0),
+		EOLFrom:           timePtr(time.Unix(2524608000, 0)),
 		IsMaintained:      true,
 		LatestVersion:     cycle + ".1",
 		LatestVersionDate: time.Unix(1700000000, 0),
@@ -127,6 +129,19 @@ var _ = Describe("probe", func() {
 		expected := probeSuccess("mongo", 1) + productInfoHeader + productInfo("8.0")
 		Expect(testutil.GatherAndCompare(reg, strings.NewReader(expected),
 			"endoflife_probe_success", "endoflife_product_info")).To(Succeed())
+	})
+
+	It("omits the end-of-life date when the API reports none", func() {
+		client := fakeClient{getRelease: func(_ context.Context, _, cycleName string) (endoflife.ReleaseDetails, error) {
+			d := details(cycleName)
+			d.EOLFrom = nil
+			return d, nil
+		}}
+
+		reg := probe(context.Background(), client, "mongo", []string{"8.0"}, false)
+
+		Expect(testutil.CollectAndCount(reg, "endoflife_eol_from_timestamp_seconds")).To(Equal(0))
+		Expect(testutil.CollectAndCount(reg, "endoflife_product_info")).To(Equal(1))
 	})
 
 	It("scrapes all cycles when all is requested", func() {

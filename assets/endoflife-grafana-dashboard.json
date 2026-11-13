@@ -411,7 +411,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "One row per supported cycle, the one ending soonest first. Days until EOL is how long the cycle has left; a cycle ending 2050-01-01 has no published end-of-life date.",
+      "description": "One row per supported cycle, the one ending soonest first. Days until EOL is how long the cycle has left; \"not published\" means endoflife.date has no end-of-life date for it.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -480,6 +480,21 @@
                     }
                   ]
                 }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null+nan",
+                      "result": {
+                        "text": "not published",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
               }
             ]
           },
@@ -591,7 +606,7 @@
         ]
       },
       "gridPos": {
-        "h": 8,
+        "h": 9,
         "w": 24,
         "x": 0,
         "y": 6
@@ -628,7 +643,7 @@
           "instant": true,
           "range": false,
           "refId": "A",
-          "expr": "sort(endoflife_product_info{product_name=~\"$product\", is_eol=\"false\"} * on (product_name, release_cycle_name) group_left () ((endoflife_eol_from_timestamp_seconds{product_name=~\"$product\"} - time()) / 86400))"
+          "expr": "sort((endoflife_product_info{product_name=~\"$product\", is_eol=\"false\"} * on (product_name, release_cycle_name) group_left () ((endoflife_eol_from_timestamp_seconds{product_name=~\"$product\"} - time()) / 86400)) or (endoflife_product_info{product_name=~\"$product\", is_eol=\"false\"} unless on (product_name, release_cycle_name) endoflife_eol_from_timestamp_seconds{product_name=~\"$product\"}) * (0/0))"
         }
       ],
       "title": "Release cycles still supported",
@@ -672,7 +687,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Support left per cycle, in days, shortest first. Bars are capped at 5 years so the urgent cycles stay readable. A cycle ending 2050-01-01 has no published end-of-life date.",
+      "description": "Support left per cycle, in days, shortest first. Cycles with no published end-of-life date have no bar - a bar would be a number nobody published.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -681,7 +696,6 @@
           "decimals": 0,
           "mappings": [],
           "min": 0,
-          "max": 1825,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -705,13 +719,44 @@
           },
           "unit": "none"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "text": "no EOL date published",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 15
       },
       "id": 7,
       "options": {
@@ -747,6 +792,19 @@
           "refId": "A",
           "expr": "sort((endoflife_eol_from_timestamp_seconds{product_name=~\"$product\"} - time()) / 86400 and on (product_name, release_cycle_name) endoflife_product_info{product_name=~\"$product\", is_eol=\"false\"})",
           "legendFormat": "{{product_name}} {{release_cycle_name}}"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "instant": true,
+          "range": false,
+          "refId": "B",
+          "expr": "(endoflife_product_info{product_name=~\"$product\", is_eol=\"false\"} unless on (product_name, release_cycle_name) endoflife_eol_from_timestamp_seconds{product_name=~\"$product\"}) * 0",
+          "legendFormat": "{{product_name}} {{release_cycle_name}}"
         }
       ],
       "title": "Days of support left",
@@ -758,7 +816,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 22
       },
       "id": 102,
       "panels": [],
@@ -953,7 +1011,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 22
+        "y": 23
       },
       "id": 8,
       "options": {
@@ -1033,7 +1091,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 31
       },
       "id": 103,
       "panels": [
