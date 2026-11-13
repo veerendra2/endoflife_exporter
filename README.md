@@ -8,7 +8,6 @@
 
 <p align="center">
   <a href="https://github.com/veerendra2/endoflife_exporter/actions"><img src="https://github.com/veerendra2/endoflife_exporter/workflows/CI/badge.svg" alt="Build Status"></a>
-  <a href="https://goreportcard.com/report/github.com/veerendra2/endoflife_exporter"><img src="https://goreportcard.com/badge/github.com/veerendra2/endoflife_exporter" alt="Go Report Card"></a>
   <a href="https://github.com/veerendra2/endoflife_exporter/releases"><img src="https://img.shields.io/github/v/release/veerendra2/endoflife_exporter" alt="Release"></a>
   <a href="https://github.com/veerendra2/endoflife_exporter/blob/main/LICENSE"><img src="https://img.shields.io/github/license/veerendra2/endoflife_exporter" alt="License"></a>
   <a href="https://github.com/veerendra2/endoflife_exporter/stargazers"><img src="https://img.shields.io/github/stars/veerendra2/endoflife_exporter" alt="Stars"></a>
@@ -58,7 +57,8 @@ docker compose up -d
 
 ## Probing
 
-One product per request. Adding a product is a `prometheus.yml` edit, no restart.
+One product per request. The product comes from the query string, so the exporter holds no
+product list of its own — nothing to keep in sync with `prometheus.yml`.
 
 | Parameter  | Required | Description                                                                                      |
 | ---------- | -------- | ------------------------------------------------------------------------------------------------ |
