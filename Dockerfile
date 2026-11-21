@@ -15,7 +15,7 @@ RUN go mod download
 COPY . .
 RUN task build
 
-FROM alpine:3.24.3
+FROM alpine:3.24.4
 RUN apk update && apk add --no-cache ca-certificates
 WORKDIR /
 COPY --from=app_builder /app/dist/endoflife_exporter .
